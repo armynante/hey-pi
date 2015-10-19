@@ -1,0 +1,28 @@
+{
+  "name": "hey-pi",
+  "version": "1.0.0",
+  "description": "A CLI tool for deploying an auto generated API for your projects",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/armynante/hey-pi.git"
+  },
+  "keywords": [
+    "API",
+    "MongoDB",
+    "REST"
+  ],
+  "author": "Andrew Mark Armenante <andrew.armenante@gmail.com> (cachemoneymillionaires.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/armynante/hey-pi/issues"
+  },
+  "homepage": "https://github.com/armynante/hey-pi#readme",
+  "dependencies": {
+    "mongodb": "^2.0.46",
+    "shelljs": "^0.5.3"
+  }
+}
