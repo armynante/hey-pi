@@ -7,13 +7,17 @@ var util = require('./utilities.js');
 var getData = function(data) {
 
 	Mongo.connect(url, function(err, db) {
-		
+
 		console.log("Connected correctly to server.");
-								
-		var collection_name = data[0]; 
-		var query = data[1]; 
-		debugger;
-		var mongoQuery = util.parseQuery(query);
+
+		var collection_name = data[0];
+		var query = data[1];
+		var mongoQuery = util.parseQuery(query)
+    if (mongoQuery === null) {
+      console.log('nothing found')
+      db.close();
+      return;
+    }
 		var cursor = db.collection(collection_name).find(mongoQuery);
 		cursor.forEach(function(doc) {
 			if( doc !== null) {
@@ -32,17 +36,17 @@ function saveData(path, data){
 
 	Mongo.connect(url, function(err, db) {
 		db.collection(collectionName, function(err,collection){
-			
+
 			if (err){
-				console.log(err);	
+				console.log(err);
 				console.log('theres error when calling collection')
 			}
 			else{
 				console.log("in the second find");
 					db.collection("schemas", function(err,schema) {
-							
+
 							result = schema.find({"collectionName":collectionName})
-							
+
 							result.forEach(function(doc){
 									if( doc != null) {
 											var diff = _.difference(keys,doc.fields);
@@ -55,7 +59,7 @@ function saveData(path, data){
 													});
 											}
 									}
-									
+
 							});
 					})
 				collection.insertOne(data, function(err, data){
@@ -71,7 +75,7 @@ function saveData(path, data){
 }
 
 var server = http.createServer(function(req, resp) {
-	
+
 	if (req.url!=="/favicon.ico"){
 		switch(req.method){
 			case "GET":
@@ -96,12 +100,9 @@ var server = http.createServer(function(req, resp) {
 				break;
 		}
 	}
-	
+
 });
 
 server.listen(8000, function(){
 	console.log("Server listening on: http://localhost:8000");
 });
-
-
- 

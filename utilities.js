@@ -22,32 +22,38 @@ module.exports = {
 		var queryWords = query.split('_');
 
 		var fieldName = queryWords[0];
-		var lastWord  = queryWords[queryWords.length-1];
+		var lastWord  = queryWords[queryWords.length-1]
+
+		lastWord = lastWord.match(/^(\d)*$/) === null ? lastWord : parseInt(lastWord);
+		lastWord = lastWord.match(/^(true)$/) === null ? lastWord : true;
+		lastWord = lastWord.match(/^(false)$/) === null ? lastWord : false;
+
 		var mongoQuery ={};
+		var now = new Date().toISOString();
 
 		if (query.match(/greater_than/)){
-
+			mongoQuery[fieldName] = {$gt:parseInt(lastWord)};
 		}
 		else if (query.match(/less_than/)){
-
+			mongoQuery[fieldName] = {$lt:parseInt(lastWord)};
 		}
 		else if (query.match(/is_not/)){
-
+			mongoQuery[fieldName] = {$ne:lastWord};
 		}
 		else if (query.match(/is_in_future/)){
-
+			mongoQuery[fieldName] = {$gt:now};
 		}
 		else if (query.match(/is_in_past/)){
-			
+			mongoQuery[fieldName] = {$lt:now};
 		}
 		else if (query.match(/is/)){
-			mongoQuery[fieldName] = lastWord;			
+			mongoQuery[fieldName] = lastWord;
 		}
 		else{
 			console.log('does not match any patterns')
+			mongoQuery = null;
 		}
 
 		return mongoQuery;
 	}
 }
-
