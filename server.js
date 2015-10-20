@@ -4,32 +4,25 @@ var _ = require("underscore");
 var url = 'mongodb://localhost:27017/hey-pi';
 var util = require('./utilities.js');
 
-var getData = function(path) {
+var getData = function(data) {
 
-  Mongo.connect(url, function(err, db) {
+	Mongo.connect(url, function(err, db) {
 		
-	console.log("Connected correctly to server.");
-							
-		var collection_name = path[0]; 
-		var query = path[1]; 
-		
+		console.log("Connected correctly to server.");
+								
+		var collection_name = data[0]; 
+		var query = data[1]; 
 		debugger;
-		var collection = db.collection(collection_name).find();
-		//var collection = db.collection(collection_name);	
-		var fieldNames = util.getFieldNames(collection);
-		
-		
-		cursor.each(function(err, doc) {
-
+		var mongoQuery = util.parseQuery(query);
+		var cursor = db.collection(collection_name).find(mongoQuery);
+		cursor.forEach(function(doc) {
 			if( doc !== null) {
-				console.log(doc)
-			} 
-			else {
-				db.close();
+					console.log(doc)
+			} else {
+					db.close();
 			}
 		});
   });
-
 }
 
 function saveData(path, data){
