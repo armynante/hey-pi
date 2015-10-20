@@ -1,6 +1,6 @@
 var http = require("http");
 var Mongo = require("mongodb").MongoClient;
-
+var _ = require("underscore");
 var url = 'mongodb://localhost:27017/hey-pi';
 var util = require('./utilities.js');
 
@@ -38,18 +38,38 @@ function saveData(path, data){
 	var keys = Object.keys(data);
 
 	Mongo.connect(url, function(err, db) {
-
 		db.collection(collectionName, function(err,collection){
-			debugger;
+			
 			if (err){
+				console.log(err);	
 				console.log('theres error when calling collection')
 			}
 			else{
+				console.log("in the second find");
+					db.collection("schemas", function(err,schema) {
+							
+							result = schema.find({"collectionName":collectionName})
+							
+							result.forEach(function(doc){
+									if( doc != null) {
+											var diff = _.difference(keys,doc.fields);
+											if (diff.length > 0) {
+													doc.fields = diff.concat(doc.fields);
+													debugger;
+													schema.updateOne({"collectionName":collectionName}, {$set: {"fields":doc.fields}},  function(err) {
+															if (err) throw err;
+															console.log("Schema updated")
+													});
+											}
+									}
+									
+							});
+					})
 				collection.insertOne(data, function(err, data){
-					if (err)
-						throw err;
-					else
-						console.log('data saved properly');
+				  if (err)
+			  	  throw err;
+			    else
+				    console.log('data saved properly');
 				});
 			}
 		});
