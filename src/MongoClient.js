@@ -22,7 +22,7 @@ export class MongoClient extends Mongo {
 		return promise;
 	}
 
-	setDB(db){
+	setDB(db) {
 		this.db = db;
 		return this;
 	}
@@ -30,12 +30,12 @@ export class MongoClient extends Mongo {
 	loadCollection(name) {
 		var promise = new Promise(
 			(resolve, reject) => {
-				this.db.collection(name, function(err,collection){
+				this.db.collection(name, (err,collection) => {
 					resolve(collection);
 				});
 			}
 		);
 		return promise;
-	} 
+	}
 
 };

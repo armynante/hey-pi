@@ -35,27 +35,30 @@ var getData = function(data) {
   });
 }
 
-function saveData(path, data){
+function saveData(path, data, resp){
 
 	var collectionName = path[0];
-	
-
-
-	DBClient.connect(url)
-	.then(function(db){
-		DBClient.setDB(db);
-
-		DBClient.loadCollection(collectionName)
-		.then(processCollection)
-		.catch(displayErr);
-
-	})
-  	.catch(displayErr);
+	var promise = new Promise(
+		(resolve, reject) => {
+			DBClient.connect(url)
+			.then(function(db){
+				DBClient.setDB(db);
+				DBClient.loadCollection(collectionName)
+				.then((collection) => {
+					debugger;
+					resolve(processCollection(collection));
+				})
+				.catch(displayErr);
+			})
+			.catch(displayErr);
+		}
+		return promise;
+	);
 
 	function processCollection(collection){
-		
+
 		if (path.length === 1){
-			debugger;
+
 			collection.insertOne(data, function(err, data){
 			  if (err)
 		  	  throw err;
@@ -65,7 +68,17 @@ function saveData(path, data){
 			updateSchema(data);
 		}
 		else if(path.length % 2 === 0){
-			//updating existing doc
+
+			var mongoQuery = util.parseQuery(path[1]);
+
+			collection.find(mongoQuery, (err, documents) => {
+				documents.toArray().then((docs) => {
+					if (docs.length > 1) {
+						return  { "code": 406, "body":"Returned multiple documents, please use a unique identier"};
+					}
+				});
+			});
+
 		}
 		else if (path.length % 2 === 1){
 			//inserting doc, with a foreign key relationship
@@ -85,12 +98,12 @@ function saveData(path, data){
 
 				if( doc != null) {
 					var diff = _.difference(keys,doc.fields);
-					 
+
 					if (diff.length > 0) {
 						doc.fields = diff.concat(doc.fields);
-						schemaCollection.updateOne({"collectionName":collectionName}, 
+						schemaCollection.updateOne({"collectionName":collectionName},
 						{$set: {"fields":doc.fields}},  function(err) {
-							
+
 							if (err) throw err;
 							console.log("Schema updated")
 						});
@@ -103,7 +116,20 @@ function saveData(path, data){
 }
 
 function displayErr (reason){
+
 	console.log(reason)
+}
+
+function respToClient(response, httpCode, body) {
+
+	response.writeHead(httpCode, {
+		'Content-Length': body.length,
+		'Content-Type': 'application/json'
+	});
+
+	if (body.length) {
+		response.write(body);
+  }
 }
 
 var server = http.createServer(function(req, resp) {
@@ -111,24 +137,36 @@ var server = http.createServer(function(req, resp) {
 	if (req.url!=="/favicon.ico"){
 		switch(req.method){
 			case "GET":
+
 				var path = util.stripPath(req.url);
 				items = getData(path);
 				resp.end(items);
 				break;
 			case "POST":
+
 				var data = "";
 				var path = util.stripPath(req.url);
+
 				req.on('data', function(chunk){
-					console.log('received data', chunk)
 					data+=chunk;
 				});
+
 				req.on('end', function(){
 					data = JSON.parse(data);
-					resp = saveData(path, data);
-				});
+					saveData(path, data ,resp).then((responseData) => {
+						debugger;
+						resp.writeHead(responseData.code, {
+							'Content-Length': responseData.body.length,
+							'Content-Type': 'application/json'
+						});
 
-				if (resp)
-					resp.end("saved properly, yay!")
+						if (responseData.body.length) {
+							resp.write(responseData.body);
+							resp.end();
+					  }
+
+					});
+				});
 				break;
 		}
 	}
