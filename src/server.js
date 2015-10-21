@@ -35,37 +35,51 @@ var getData = function(data) {
   });
 }
 
-function saveData(path, data, resp){
+function saveData(path, data){
 
 	var collectionName = path[0];
+
 	var promise = new Promise(
 		(resolve, reject) => {
 			DBClient.connect(url)
-			.then(function(db){
+			.then((db) => {
 				DBClient.setDB(db);
-				DBClient.loadCollection(collectionName)
-				.then((collection) => {
-					debugger;
-					resolve(processCollection(collection));
-				})
-				.catch(displayErr);
-			})
-			.catch(displayErr);
+				return DBClient.loadCollection(collectionName);
+			}).catch(displayErr)
+			.then((collection) => {
+				return processCollection(collection);
+			}).catch(displayErr)
+			.then((responseData) => {
+				debugger;
+				resolve(responseData);
+			}).catch((err) => {
+				displayErr(err);
+				resolve({ "code": 500, "body":"Unable to write data"});
+			});
 		}
-		return promise;
 	);
+
+	return promise;
+
 
 	function processCollection(collection){
 
 		if (path.length === 1){
 
-			collection.insertOne(data, function(err, data){
-			  if (err)
-		  	  throw err;
-		    else
-			    console.log('data saved properly');
-			});
-			updateSchema(data);
+			var promise = new Promise(
+				(resolve, reject) => {
+					collection.insertOne(data, function(err, data){
+						if (err){
+				  	  		reject(err);
+				  	  	}
+				  	  	else{
+				  	  		updateSchema(data);
+				  	  		resolve({ "code": 200, "body":"Successfully added new document\n"});
+				  	  	}
+					});
+				}
+			);
+			return promise;
 		}
 		else if(path.length % 2 === 0){
 
@@ -120,24 +134,23 @@ function displayErr (reason){
 	console.log(reason)
 }
 
-function respToClient(response, httpCode, body) {
+// function respToClient(response, httpCode, body) {
 
-	response.writeHead(httpCode, {
-		'Content-Length': body.length,
-		'Content-Type': 'application/json'
-	});
+// 	response.writeHead(httpCode, {
+// 		'Content-Length': body.length,
+// 		'Content-Type': 'application/json'
+// 	});
 
-	if (body.length) {
-		response.write(body);
-  }
-}
+// 	if (body.length) {
+// 		response.write(body);
+//   }
+// }
 
 var server = http.createServer(function(req, resp) {
 
 	if (req.url!=="/favicon.ico"){
 		switch(req.method){
 			case "GET":
-
 				var path = util.stripPath(req.url);
 				items = getData(path);
 				resp.end(items);
@@ -153,8 +166,8 @@ var server = http.createServer(function(req, resp) {
 
 				req.on('end', function(){
 					data = JSON.parse(data);
-					saveData(path, data ,resp).then((responseData) => {
-						debugger;
+					saveData(path, data).then((responseData) => {
+
 						resp.writeHead(responseData.code, {
 							'Content-Length': responseData.body.length,
 							'Content-Type': 'application/json'
@@ -163,9 +176,11 @@ var server = http.createServer(function(req, resp) {
 						if (responseData.body.length) {
 							resp.write(responseData.body);
 							resp.end();
-					  }
+						}
+
 
 					});
+					
 				});
 				break;
 		}
