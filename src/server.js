@@ -1,12 +1,15 @@
 "use strict";
 
-import {MongoClient} from './MongoClient.js'
+import {MongoClient} from './MongoClient.js';
+import colUtil from './collectionUtil.js';
 
 const http = require("http")
 const _ = require("underscore")
 const util = require('./utilities.js')
 const url = 'mongodb://localhost:27017/hey-pi'
 const DBClient = new MongoClient();
+
+//TODO: make sure user only queries for one doc when doing POST
 
 var getData = function(data) {
 
@@ -41,14 +44,17 @@ function saveData(path, data){
 
 	var promise = new Promise(
 		(resolve, reject) => {
+
 			DBClient.connect(url)
 			.then((db) => {
 				DBClient.setDB(db);
 				return DBClient.loadCollection(collectionName);
 			}).catch(displayErr)
+
 			.then((collection) => {
 				return processCollection(collection);
 			}).catch(displayErr)
+
 			.then((responseData) => {
 				debugger;
 				resolve(responseData);
@@ -64,8 +70,9 @@ function saveData(path, data){
 
 	function processCollection(collection){
 
-		if (path.length === 1){
+		var mongoQuery = util.parseQuery(path[1]);
 
+		if (path.length === 1){
 			var promise = new Promise(
 				(resolve, reject) => {
 					collection.insertOne(data, function(err, data){
@@ -81,21 +88,58 @@ function saveData(path, data){
 			);
 			return promise;
 		}
-		else if(path.length % 2 === 0){
 
-			var mongoQuery = util.parseQuery(path[1]);
-
-			collection.find(mongoQuery, (err, documents) => {
-				documents.toArray().then((docs) => {
-					if (docs.length > 1) {
-						return  { "code": 406, "body":"Returned multiple documents, please use a unique identier"};
-					}
-				});
-			});
+		else if(path.length === 2){
+			var promise = new Promise(
+				(resolve, reject) => {
+					collection.updateOne(mongoQuery, 
+						{
+							$set: data
+						}, 
+						(err, results) => {
+							if (err) {
+								reject(err);
+							}
+							else{
+								updateSchema(data);
+				  	  			resolve({ "code": 200, "body":"Successfully updated new document\n"});
+				  	  		}
+						}
+					);
+				}
+			);
+			return promise;
 
 		}
-		else if (path.length % 2 === 1){
-			//inserting doc, with a foreign key relationship
+		else if (path.length === 3){
+			var collectionToAddTo = path[2];
+			var parentID;
+
+			var promise = new Promise(
+				(resolve, reject) => {
+					colUtil.findOne(collection, mongoQuery)
+					.then((doc) => {
+						parentID = doc._id.id;
+						return DBClient.loadCollection(collectionToAddTo);
+					})
+					.catch(displayErr)
+					.then((collectionToAddToObj) => {
+						var obj = {};
+						var keyName = collectionName + "_id"; 
+						obj[keyName] = parentID;
+						data = _.extend(data, obj);
+						debugger;
+						return colUtil.insertOne(collectionToAddToObj, data);
+					})
+					.catch(displayErr)
+					.then((responseData) => {
+						updateSchema(data);
+						resolve(responseData);
+					})
+					.catch(displayErr);
+				}
+			);
+			return promise;
 		}
 		else{
 
@@ -133,18 +177,6 @@ function displayErr (reason){
 
 	console.log(reason)
 }
-
-// function respToClient(response, httpCode, body) {
-
-// 	response.writeHead(httpCode, {
-// 		'Content-Length': body.length,
-// 		'Content-Type': 'application/json'
-// 	});
-
-// 	if (body.length) {
-// 		response.write(body);
-//   }
-// }
 
 var server = http.createServer(function(req, resp) {
 
