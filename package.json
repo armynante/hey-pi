@@ -4,7 +4,7 @@
   "description": "A CLI tool for deploying an auto generated API for your projects",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "babel src -d dist -w -s"
   },
   "repository": {
     "type": "git",
@@ -25,5 +25,8 @@
     "mongodb": "^2.0.46",
     "shelljs": "^0.5.3",
     "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "babel-core": "^5.8.25"
   }
 }

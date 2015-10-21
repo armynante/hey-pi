@@ -1,59 +1,58 @@
+"use strict";
+
+var _MongoClientJs = require('./MongoClient.js');
+
 var http = require("http");
-//var Mongo = require("mongodb").MongoClient;
 var _ = require("underscore");
-var url = 'mongodb://localhost:27017/hey-pi';
 var util = require('./utilities.js');
-var dbUtil = require('./dbUtil.js')
+var url = 'mongodb://localhost:27017/hey-pi';
+var DBClient = new _MongoClientJs.MongoClient();
 
-var getData = function(data) {
+var getData = function getData(data) {
 
-	Mongo.connect(url, function(err, db) {
+	DBClient.connect(url, function (err, db) {
 
 		console.log("Connected correctly to server.");
 
 		var collection_name = data[0];
 		var query = data[1];
-		var mongoQuery = util.parseQuery(query)
-    if (mongoQuery === null) {
-      console.log('nothing found')
-      db.close();
-      return;
-    }
+		var mongoQuery = util.parseQuery(query);
+
+		if (mongoQuery === null) {
+			console.log('nothing found');
+			db.close();
+			return;
+		}
+
 		var cursor = db.collection(collection_name).find(mongoQuery);
-		cursor.forEach(function(doc) {
-			if( doc !== null) {
-					console.log(doc)
+		cursor.forEach(function (doc) {
+			if (doc !== null) {
+				console.log(doc);
 			} else {
-					db.close();
+				db.close();
 			}
 		});
-  });
-}
+	});
+};
 
-function saveData(path, data){
+function saveData(path, data) {
 
 	var collectionName = path[0];
 
-	if (path.length === 1){
+	if (path.length === 1) {
 		//simple insert
-	}
-	else if(path.length % 2 === 0){
-		//updating existing doc
-	}
-	else if (path.length % 2 === 1){
-		//inserting doc, with a foreign key relationship
-	}
-	else{
-
-	}
+	} else if (path.length % 2 === 0) {
+			//updating existing doc
+		} else if (path.length % 2 === 1) {
+				//inserting doc, with a foreign key relationship
+			} else {}
 	var keys = Object.keys(data);
 
-	dbUtil.connect(url).then(function(db){
-		console.log('entered then func')
+	DBClient.connect(url).then(function (db) {
+		console.log('entered then func');
 		debugger;
-	}).catch(function(reason){
-		console.log('in the catch block')
-		console.log(reason)
+	})["catch"](function (reason) {
+		console.log(reason);
 	});
 
 	// Mongo.connect(url, function(err, db) {
@@ -96,10 +95,10 @@ function saveData(path, data){
 	// });
 }
 
-var server = http.createServer(function(req, resp) {
+var server = http.createServer(function (req, resp) {
 
-	if (req.url!=="/favicon.ico"){
-		switch(req.method){
+	if (req.url !== "/favicon.ico") {
+		switch (req.method) {
 			case "GET":
 				var path = util.stripPath(req.url);
 				items = getData(path);
@@ -108,23 +107,22 @@ var server = http.createServer(function(req, resp) {
 			case "POST":
 				var data = "";
 				var path = util.stripPath(req.url);
-				req.on('data', function(chunk){
-					console.log('received data', chunk)
-					data+=chunk;
+				req.on('data', function (chunk) {
+					console.log('received data', chunk);
+					data += chunk;
 				});
-				req.on('end', function(){
+				req.on('end', function () {
 					data = JSON.parse(data);
 					resp = saveData(path, data);
 				});
 
-				if (resp)
-					resp.end("saved properly, yay!")
+				if (resp) resp.end("saved properly, yay!");
 				break;
 		}
 	}
-
 });
 
-server.listen(8000, function(){
+server.listen(8000, function () {
 	console.log("Server listening on: http://localhost:8000");
 });
+//# sourceMappingURL=server.js.map

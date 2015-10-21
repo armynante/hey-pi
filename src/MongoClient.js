@@ -1,10 +1,19 @@
+"use strict";
+
 var Mongo = require("mongodb").MongoClient;
-module.exports = {
-	connect: function(url){
+
+export class MongoClient extends Mongo {
+
+	constructor(url) {
+		super();
+		this.url = url;
+	}
+
+	connect(){
 		console.log('entered connect function')
 		var promise = new Promise(
-			function(resolve, reject){
-				Mongo.connect(url, function(err,db){
+			(resolve, reject) => {
+				Mongo.connect(this.url, function(err,db){
 					console.log('got into mongo connect function',db)
 					resolve(db);
 				});
@@ -12,4 +21,8 @@ module.exports = {
 		);
 		return promise;
 	}
-}
+
+	collection(name) {
+
+	}
+};
