@@ -7,14 +7,14 @@ export class MongoClient extends Mongo {
 	constructor(url) {
 		super();
 		this.url = url;
+		this.db = null;
 	}
 
 	connect(){
 		console.log('entered connect function')
 		var promise = new Promise(
 			(resolve, reject) => {
-				Mongo.connect(this.url, function(err,db){
-					console.log('got into mongo connect function',db)
+				Mongo.connect(this.url, function(err,db) {
 					resolve(db);
 				});
 			}
@@ -22,7 +22,20 @@ export class MongoClient extends Mongo {
 		return promise;
 	}
 
-	collection(name) {
-
+	setDB(db){
+		this.db = db;
+		return this;
 	}
+
+	loadCollection(name) {
+		var promise = new Promise(
+			(resolve, reject) => {
+				this.db.collection(name, function(err,collection){
+					resolve(collection);
+				});
+			}
+		);
+		return promise;
+	} 
+
 };

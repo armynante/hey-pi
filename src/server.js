@@ -38,70 +38,72 @@ var getData = function(data) {
 function saveData(path, data){
 
 	var collectionName = path[0];
+	
 
-	if (path.length === 1){
-		//simple insert
-	}
-	else if(path.length % 2 === 0){
-		//updating existing doc
-	}
-	else if (path.length % 2 === 1){
-		//inserting doc, with a foreign key relationship
-	}
-	else{
 
-	}
-	var keys = Object.keys(data);
+	DBClient.connect(url)
+	.then(function(db){
+		DBClient.setDB(db);
 
-	DBClient.connect(url).then(function(db){
-		console.log('entered then func')
-		debugger;
+		DBClient.loadCollection(collectionName)
+		.then(processCollection)
+		.catch(displayErr);
+
 	})
+  	.catch(displayErr);
 
-  .catch(function(reason){
-		console.log(reason)
-	})
+	function processCollection(collection){
+		
+		if (path.length === 1){
+			debugger;
+			collection.insertOne(data, function(err, data){
+			  if (err)
+		  	  throw err;
+		    else
+			    console.log('data saved properly');
+			});
+			updateSchema(data);
+		}
+		else if(path.length % 2 === 0){
+			//updating existing doc
+		}
+		else if (path.length % 2 === 1){
+			//inserting doc, with a foreign key relationship
+		}
+		else{
 
+		}
+	}
 
+	function updateSchema(data){
+		var keys = Object.keys(data);
 
-	// Mongo.connect(url, function(err, db) {
-	// 	db.collection(collectionName, function(err,collection){
+		DBClient.loadCollection("schemas")
+		.then((schemaCollection) => {
+			var result = schemaCollection.find({"collectionName":collectionName});
+			result.forEach(function(doc){
 
-	// 		if (err){
-	// 			console.log(err);
-	// 			console.log('theres error when calling collection')
-	// 		}
-	// 		else{
-	// 			console.log("in the second find");
-	// 				db.collection("schemas", function(err,schema) {
+				if( doc != null) {
+					var diff = _.difference(keys,doc.fields);
+					 
+					if (diff.length > 0) {
+						doc.fields = diff.concat(doc.fields);
+						schemaCollection.updateOne({"collectionName":collectionName}, 
+						{$set: {"fields":doc.fields}},  function(err) {
+							
+							if (err) throw err;
+							console.log("Schema updated")
+						});
+					}
+				}
+			});
+		})
+		.catch(displayErr);
+	}
+}
 
-	// 						result = schema.find({"collectionName":collectionName})
-
-	// 						result.forEach(function(doc){
-	// 								if( doc != null) {
-	// 										var diff = _.difference(keys,doc.fields);
-	// 										if (diff.length > 0) {
-	// 												doc.fields = diff.concat(doc.fields);
-	// 												debugger;
-	// 												schema.updateOne({"collectionName":collectionName}, {$set: {"fields":doc.fields}},  function(err) {
-	// 														if (err) throw err;
-	// 														console.log("Schema updated")
-	// 												});
-	// 										}
-	// 								}
-
-	// 						});
-	// 				})
-	// 			collection.insertOne(data, function(err, data){
-	// 			  if (err)
-	// 		  	  throw err;
-	// 		    else
-	// 			    console.log('data saved properly');
-	// 			});
-	// 		}
-	// 	});
-
-	// });
+function displayErr (reason){
+	console.log(reason)
 }
 
 var server = http.createServer(function(req, resp) {
