@@ -18,7 +18,7 @@ module.exports = {
 			/event_was_in_the_past
 			/name_is_not_andrew
 		*/
-
+		
 		var queryWords = query.split('_');
 
 		var fieldName = queryWords[0];

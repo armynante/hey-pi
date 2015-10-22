@@ -6,11 +6,12 @@ var colUtil =  {
 			(resolve, reject) => {
 				collection.find(query, (err, docs) => {
 					docs.toArray((err, docArray) => {
+
 						if (docArray.length > 1){
-							reject({"message": "More than one docs found", "documents": docArray});
+							reject({"message": "More than one docs found\n", "documents": docArray});
 						}
 						else if (!docArray.length){
-							reject({"message": "No documents found", "documents": docArray});
+							reject({"message": "No documents found\n", "documents": docArray});
 						}
 						else{
 							resolve(docArray[0]);
@@ -28,7 +29,7 @@ var colUtil =  {
 				collection.find(query, (err, docs) => {
 					docs.toArray((err, docArray) => {
 						if (!docArray.length){
-							reject({"message": "No documents found", "documents": docArray});
+							reject({"message": "No documents found\n", "documents": docArray});
 						}
 						else{
 							resolve(docArray);
@@ -43,13 +44,14 @@ var colUtil =  {
 	insertOne: function(collection, data){
 		var promise = new Promise(
 			(resolve, reject) => {
-				collection.insertOne(collection,function(err, data){
+				collection.insertOne(data,function(err, data){
 					if (err){
 			  	  		reject(err);
 			  	  	}
 			  	  	else{
-			  	  		updateSchema(data);
-			  	  		resolve({ "code": 200, "body":"Successfully added new document\n"});
+			  	  		//updateSchema(data);
+			  	  		//TODO: message should also tell user what the new doc looks like now
+			  	  		resolve({"message": "Successfully added new document\n"});
 			  	  	}
 				});
 			}

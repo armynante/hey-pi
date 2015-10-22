@@ -31,7 +31,10 @@ export class MongoClient extends Mongo {
 		var promise = new Promise(
 			(resolve, reject) => {
 				this.db.collection(name, (err,collection) => {
-					resolve(collection);
+					if (err)
+						reject (err);
+					else
+						resolve(collection);
 				});
 			}
 		);

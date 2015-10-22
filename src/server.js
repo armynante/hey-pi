@@ -49,18 +49,20 @@ function saveData(path, data){
 			.then((db) => {
 				DBClient.setDB(db);
 				return DBClient.loadCollection(collectionName);
-			}).catch(displayErr)
+			})
 
 			.then((collection) => {
 				return processCollection(collection);
-			}).catch(displayErr)
+			})
 
-			.then((responseData) => {
-				debugger;
+			.then((msg) => {
+				var responseData = {"code": 200, "body": msg.message};
 				resolve(responseData);
-			}).catch((err) => {
+			},(err) => {
 				displayErr(err);
-				resolve({ "code": 500, "body":"Unable to write data"});
+				var responseData = {"code": 500, "body": err.message};
+				console.log("response data is: "+ responseData)
+				resolve(responseData);
 			});
 		}
 	);
@@ -70,7 +72,9 @@ function saveData(path, data){
 
 	function processCollection(collection){
 
-		var mongoQuery = util.parseQuery(path[1]);
+		if (path.length > 1) {
+			var mongoQuery = util.parseQuery(path[1]);
+		}
 
 		if (path.length === 1){
 			var promise = new Promise(
@@ -118,28 +122,29 @@ function saveData(path, data){
 			var promise = new Promise(
 				(resolve, reject) => {
 					colUtil.findOne(collection, mongoQuery)
+
 					.then((doc) => {
 						parentID = doc._id.id;
 						return DBClient.loadCollection(collectionToAddTo);
 					})
-					.catch(displayErr)
+
 					.then((collectionToAddToObj) => {
 						var obj = {};
 						var keyName = collectionName + "_id"; 
 						obj[keyName] = parentID;
 						data = _.extend(data, obj);
-						debugger;
 						return colUtil.insertOne(collectionToAddToObj, data);
 					})
-					.catch(displayErr)
-					.then((responseData) => {
-						updateSchema(data);
-						resolve(responseData);
-					})
-					.catch(displayErr);
+				
+					.then((msg) => {
+						resolve(msg);
+					},(err) => {
+						reject(err);
+					});
 				}
 			);
 			return promise;
+
 		}
 		else{
 
@@ -175,7 +180,8 @@ function saveData(path, data){
 
 function displayErr (reason){
 
-	console.log(reason)
+	console.log(reason);
+	return;
 }
 
 var server = http.createServer(function(req, resp) {
@@ -209,8 +215,6 @@ var server = http.createServer(function(req, resp) {
 							resp.write(responseData.body);
 							resp.end();
 						}
-
-
 					});
 					
 				});
