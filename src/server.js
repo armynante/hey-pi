@@ -38,6 +38,58 @@ var getData = function(data) {
   });
 }
 
+
+function patchData(path, data) {
+
+	var collectionName = path[0];
+
+	var promise = new Promise(
+		(resolve, reject) => {
+
+			if (path.length % 2 !== 0) {
+				reject({ "code": 400, "body": "Wrong HTTP verb used."})
+			}
+
+			DBClient.connect(url)
+			.then((db) => {
+				DBClient.setDB(db);
+				return DBClient.loadCollection(collectionName);
+			})
+
+			.then((collection) => {
+				return patchDataHelper(collection);
+			})
+
+			.then((msg) => {
+				var responseData = {"code": 204, "body": msg.message};
+				resolve(responseData);
+			},(err) => {
+				displayErr(err);
+				var responseData = {"code": 500, "body": err.message};
+				console.log("response data is: "+ responseData)
+				resolve(responseData);
+			});
+		});
+
+	function patchDataHelper(collection) {
+
+	  var mongoQuery = util.parseQuery(path[1]);
+
+		var promise = new Promise(
+			(resolve, reject) => {
+				colUtil.updateOne(collection, mongoQuery, data)
+				.then((message) => {
+					resolve(message);
+				}, (err) => {
+					reject(err);
+				})
+			}
+		);
+		return promise;
+	}
+	return promise;
+}
+
 function saveData(path, data){
 
 	var collectionName = path[0];
@@ -52,11 +104,11 @@ function saveData(path, data){
 			})
 
 			.then((collection) => {
-				return processCollection(collection);
+				return saveDataHelper(collection);
 			})
 
 			.then((msg) => {
-				var responseData = {"code": 200, "body": msg.message};
+				var responseData = {"code": 201, "body": msg.message};
 				resolve(responseData);
 			},(err) => {
 				displayErr(err);
@@ -70,7 +122,7 @@ function saveData(path, data){
 	return promise;
 
 
-	function processCollection(collection){
+	function saveDataHelper(collection){
 
 		if (path.length > 1) {
 			var mongoQuery = util.parseQuery(path[1]);
@@ -93,28 +145,6 @@ function saveData(path, data){
 			return promise;
 		}
 
-		else if(path.length === 2){
-			var promise = new Promise(
-				(resolve, reject) => {
-					collection.updateOne(mongoQuery, 
-						{
-							$set: data
-						}, 
-						(err, results) => {
-							if (err) {
-								reject(err);
-							}
-							else{
-								updateSchema(data);
-				  	  			resolve({ "code": 200, "body":"Successfully updated new document\n"});
-				  	  		}
-						}
-					);
-				}
-			);
-			return promise;
-
-		}
 		else if (path.length === 3){
 			var collectionToAddTo = path[2];
 			var parentID;
@@ -130,12 +160,12 @@ function saveData(path, data){
 
 					.then((collectionToAddToObj) => {
 						var obj = {};
-						var keyName = collectionName + "_id"; 
+						var keyName = collectionName + "_id";
 						obj[keyName] = parentID;
 						data = _.extend(data, obj);
 						return colUtil.insertOne(collectionToAddToObj, data);
 					})
-				
+
 					.then((msg) => {
 						resolve(msg);
 					},(err) => {
@@ -187,16 +217,41 @@ function displayErr (reason){
 var server = http.createServer(function(req, resp) {
 
 	if (req.url!=="/favicon.ico"){
+
+		var path = util.stripPath(req.url);
+		var data = "";
+
 		switch(req.method){
+
 			case "GET":
-				var path = util.stripPath(req.url);
-				items = getData(path);
+				var items = getData(path);
 				resp.end(items);
 				break;
-			case "POST":
 
-				var data = "";
-				var path = util.stripPath(req.url);
+			case "PATCH":
+				req.on('data', function(chunk){
+					data+=chunk;
+				});
+
+				req.on('end', function(){
+
+					data = JSON.parse(data);
+					patchData(path, data).then((responseData) => {
+						debugger;
+						resp.writeHead(responseData.code, {
+							'Content-Length': responseData.body.length,
+							'Content-Type': 'application/json'
+						});
+
+						if (responseData.body.length) {
+							resp.write(responseData.body);
+							resp.end();
+						}
+					});
+
+				});
+				break;
+			case "POST":
 
 				req.on('data', function(chunk){
 					data+=chunk;
@@ -216,7 +271,7 @@ var server = http.createServer(function(req, resp) {
 							resp.end();
 						}
 					});
-					
+
 				});
 				break;
 		}
