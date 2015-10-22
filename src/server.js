@@ -11,84 +11,34 @@ const DBClient = new MongoClient();
 
 //TODO: make sure user only queries for one doc when doing POST
 
-var getData = function(data) {
-
-	DBClient.connect(url, function(err, db) {
+var getData = function(path) {
 
 	  console.log("Connected correctly to server.");
+		var mongoQuery = {};
+		var collectionName = path[0];
 
-		var collection_name = data[0];
-		var query = data[1];
-		var mongoQuery = util.parseQuery(query)
-
-		if (mongoQuery === null) {
-      console.log('nothing found')
-      db.close();
-      return;
-    }
-
-		var cursor = db.collection(collection_name).find(mongoQuery);
-		cursor.forEach(function(doc) {
-			if( doc !== null) {
-					console.log(doc)
-			} else {
-					db.close();
-			}
-		});
-  });
-}
-
-
-function patchData(path, data) {
-
-	var collectionName = path[0];
-
-	var promise = new Promise(
-		(resolve, reject) => {
-
-			if (path.length % 2 !== 0) {
-				reject({ "code": 400, "body": "Wrong HTTP verb used."})
-			}
-
-			DBClient.connect(url)
-			.then((db) => {
-				DBClient.setDB(db);
-				return DBClient.loadCollection(collectionName);
-			})
-
-			.then((collection) => {
-				return patchDataHelper(collection);
-			})
-
-			.then((msg) => {
-				var responseData = {"code": 204, "body": msg.message};
-				resolve(responseData);
-			},(err) => {
-				displayErr(err);
-				var responseData = {"code": 500, "body": err.message};
-				console.log("response data is: "+ responseData)
-				resolve(responseData);
-			});
-		});
-
-	function patchDataHelper(collection) {
-
-	  var mongoQuery = util.parseQuery(path[1]);
+		if (path.length > 1){
+			mongoQuery = util.parseQuery(path[1]);
+		}
 
 		var promise = new Promise(
 			(resolve, reject) => {
-				colUtil.updateOne(collection, mongoQuery, data)
-				.then((message) => {
-					resolve(message);
-				}, (err) => {
-					reject(err);
+				DBClient.connect(url)
+				.then((db) => {
+					return DBClient.loadCollection(collectionName);
 				})
-			}
-		);
-		return promise;
-	}
-	return promise;
-}
+				.then((collection) => {
+					debugger;
+					return colUtil.findMany(collection, mongoQuery);
+				})
+				.then((msg) => {
+					resolve({"code":200,"body": msg.message});
+				}, (err) => {
+					resolve({"code": 404, "body":err.message});
+				});
+  		});
+		 return promise;
+};
 
 function saveData(path, data){
 
@@ -144,6 +94,22 @@ function saveData(path, data){
 			);
 			return promise;
 		}
+
+		else if (path.length == 2) {
+
+			var promise = new Promise(
+				(resolve, reject) => {
+					colUtil.updateOne(collection, mongoQuery, data)
+					.then((message) => {
+						resolve(message);
+					}, (err) => {
+						reject(err);
+					})
+				}
+			);
+			return promise;
+		}
+
 
 		else if (path.length === 3){
 			var collectionToAddTo = path[2];
@@ -224,33 +190,20 @@ var server = http.createServer(function(req, resp) {
 		switch(req.method){
 
 			case "GET":
-				var items = getData(path);
-				resp.end(items);
-				break;
+				getData(path).then((docs) => {
 
-			case "PATCH":
-				req.on('data', function(chunk){
-					data+=chunk;
-				});
-
-				req.on('end', function(){
-
-					data = JSON.parse(data);
-					patchData(path, data).then((responseData) => {
-						debugger;
-						resp.writeHead(responseData.code, {
-							'Content-Length': responseData.body.length,
-							'Content-Type': 'application/json'
-						});
-
-						if (responseData.body.length) {
-							resp.write(responseData.body);
-							resp.end();
-						}
+					resp.writeHead(200, {
+						'Content-Length': docs.length,
+						'Content-Type': 'application/json'
 					});
 
+					if (docs.length) {
+						resp.write(docs);
+						resp.end();
+					}
 				});
 				break;
+
 			case "POST":
 
 				req.on('data', function(chunk){
