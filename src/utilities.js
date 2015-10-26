@@ -19,7 +19,9 @@ module.exports = {
 			/name_is_not_andrew
 		*/
 
-		
+		if (query.length === 0)
+			return {};
+
 		var queryWords = query.split('_');
 
 		var fieldName = queryWords[0];

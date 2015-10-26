@@ -13,95 +13,84 @@ const DBClient = new MongoClient();
 
 var getData = function(path) {
 
-	  console.log("Connected correctly to server.");
-		var mongoQuery = {};
-		var collectionName = path[0];
+	var promise = new Promise(
+		(resolve, reject) => {
 
-		if (path.length > 1){
-			mongoQuery = util.parseQuery(path[1]);
+			DBClient.connect(url)
+			.then((db) => {
+				DBClient.setDB(db);
+				return getDataHelper(path);
+			})
+			.then((docs) => {
+				if (path.length <= 2) {
+					resolve({"code":200,"body": docs});
+				}
+			}, (err) => {
+				reject({"code": 404, "body": err});
+			});
+  	});
+	return promise;
+
+	function getDataHelper (path){
+		
+		if (path.length % 2 === 1 ){
+			path.push("");
+		}
+		//TODO: do the same padding in other functions
+
+		if (path.length < 2){
+			console.log("Something went wrong with getDataHelper's recursion")
+		}
+		else if (path.length ===2){ //base case of recursion
+			var collectionName = path[0];
+			var mongoQuery = util.parseQuery(path[1]);
+
+			var promise = new Promise(
+				(resolve, reject) => {
+					DBClient.loadCollection(collectionName)
+					.then((collection) => {
+						return colUtil.findMany(collection, mongoQuery);
+					})
+					.then((docs) => {
+						resolve(docs);
+					}, (err) => {
+						reject(err);
+					});
+	  		});
 		}
 
-		var promise = new Promise(
-			(resolve, reject) => {
-				DBClient.connect(url)
-				.then((db) => {
-					DBClient.setDB(db);
-					return DBClient.loadCollection(collectionName);
-				})
-				.then((collection) => {
-					return colUtil.findMany(collection, mongoQuery);
-				})
-				.then((docs) => {
-					if (path.length <= 2) {
-						resolve({"code":200,"body": docs});
-					}
-				}, (err) => {
-					reject({"code": 404, "body":err.message});
-				});
-  		});
-		 return promise;
+		else{
+			var promise = new Promise(
+				(resolve, reject) => {
+					
+					var newPath = path.slice(0,-2);
 
+					getDataHelper(newPath).then((result) => {
+
+						var collectionName = path[path.length-2];
+						var mongoQuery = util.parseQuery(path[path.length-1]);
+
+						var foreignKeys = getIdsFromDocs(result.docs);
+						var fieldName = path[path.length-4] + "id"; // name of parent collection + "id"
+						mongoQuery[fieldName] = {$in: foreignKeys};
+
+						DBClient.loadCollection(collectionName)
+						.then((collection) => {
+							return colUtil.findMany(collection, mongoQuery);
+						})
+						.then((docs) => {
+							resolve(docs);
+						});
+					});
+				}
+			);	
+		}
+		return promise;
+	};
 };
 
-var getData = function(path, querySum, docs) {
-	var sum = {};
-		
-	if(path.length === 0) {
-		/*
-		var promise = new Promise{
-			(resolve, reject) => {
-				resolve({"code":200,"body": docs});
-			}
-		} */
-		return promise;
-	}
-	else if (path.length === 1) {
-		var promise = new Promise(
-			(resolve, reject) => {
-				DBClient.connect(url)
-				.then((db) => {
-					DBClient.setDB(db);
-					return DBClient.loadCollection(collectionName);
-				})
-				.then((collection) => {
-					return colUtil.findMany(collection, mongoQuery);
-				})
-				.then((docs) => {
-					//resolve({"code":200,"body": docs});
-
-					getData()
-				}, (err) => {
-					reject({"code": 404, "body":err.message});
-				});
-		});
-	}
-	else {
-		var collectionName = path[0];
-		if (path.length>1){
-			var newQuery = util.parseQuery(path[1]);
-			querySum = _.extend(querySum, newQuery);
-			//reconstruct query
-		}
-
-		var promise = new Promise(
-			(resolve, reject) => {
-				DBClient.connect(url)
-				.then((db) => {
-					DBClient.setDB(db);
-					return DBClient.loadCollection(collectionName);
-				})
-				.then((collection) => {
-					return colUtil.findMany(collection, mongoQuery);
-				})
-				.then((docs) => {
-					//resolve({"code":200,"body": docs});
-
-					getData()
-				}, (err) => {
-					reject({"code": 404, "body":err.message});
-				});
-		});
-	}
+function getIdsFromDocs(docs){
+	return [112,1113];
 }
 
 function saveData(path, data){
