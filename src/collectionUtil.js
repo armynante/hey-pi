@@ -32,6 +32,7 @@ var colUtil =  {
 							reject({"message": "No documents found\n", "result": docArray});
 						}
 						else{
+							debugger;
 							resolve(docArray);
 						}
 					});

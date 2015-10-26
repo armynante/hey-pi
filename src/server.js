@@ -25,16 +25,17 @@ var getData = function(path) {
 			(resolve, reject) => {
 				DBClient.connect(url)
 				.then((db) => {
+					DBClient.setDB(db);
 					return DBClient.loadCollection(collectionName);
 				})
 				.then((collection) => {
-					debugger;
+					console.log(collection)
 					return colUtil.findMany(collection, mongoQuery);
 				})
-				.then((msg) => {
-					resolve({"code":200,"body": msg.message});
+				.then((docs) => {
+					resolve({"code":200,"body": docs});
 				}, (err) => {
-					resolve({"code": 404, "body":err.message});
+					reject({"code": 404, "body":err.message});
 				});
   		});
 		 return promise;
@@ -191,17 +192,27 @@ var server = http.createServer(function(req, resp) {
 
 			case "GET":
 				getData(path).then((docs) => {
+					
+					var docStr = JSON.stringify(docs.body);
 
-					resp.writeHead(200, {
-						'Content-Length': docs.length,
-						'Content-Type': 'application/json'
+					resp.writeHead(docs.code, {
+						'Content-Length': docStr.length,
+						'Content-Type': 'text/plain'
 					});
+					debugger;
+					resp.write(docStr);
+					resp.end();
 
-					if (docs.length) {
-						resp.write(docs);
-						resp.end();
-					}
+				},(err) => {
+					debugger;
+					resp.writeHead(err.code, {
+						'Content-Length': err.body.length,
+						'Content-Type': 'text/plain'
+					})
+					resp.write(err.body);
+					resp.end();
 				});
+
 				break;
 
 			case "POST":

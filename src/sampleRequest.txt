@@ -1,0 +1,1 @@
+curl -X POST -H "Content-Type: application/json" -d '{"name":"rc_stuff"}' localhost:8000/users/name_is_bob/todos
