@@ -29,20 +29,83 @@ var getData = function(path) {
 					return DBClient.loadCollection(collectionName);
 				})
 				.then((collection) => {
-					console.log(collection)
 					return colUtil.findMany(collection, mongoQuery);
 				})
 				.then((docs) => {
-					resolve({"code":200,"body": docs});
+					if (path.length <= 2) {
+						resolve({"code":200,"body": docs});
+					}
 				}, (err) => {
 					reject({"code": 404, "body":err.message});
 				});
   		});
 		 return promise;
+
 };
 
-function saveData(path, data){
+var getData = function(path, querySum, docs) {
+	var sum = {};
+		
+	if(path.length === 0) {
+		/*
+		var promise = new Promise{
+			(resolve, reject) => {
+				resolve({"code":200,"body": docs});
+			}
+		} */
+		return promise;
+	}
+	else if (path.length === 1) {
+		var promise = new Promise(
+			(resolve, reject) => {
+				DBClient.connect(url)
+				.then((db) => {
+					DBClient.setDB(db);
+					return DBClient.loadCollection(collectionName);
+				})
+				.then((collection) => {
+					return colUtil.findMany(collection, mongoQuery);
+				})
+				.then((docs) => {
+					//resolve({"code":200,"body": docs});
 
+					getData()
+				}, (err) => {
+					reject({"code": 404, "body":err.message});
+				});
+		});
+	}
+	else {
+		var collectionName = path[0];
+		if (path.length>1){
+			var newQuery = util.parseQuery(path[1]);
+			querySum = _.extend(querySum, newQuery);
+			//reconstruct query
+		}
+
+		var promise = new Promise(
+			(resolve, reject) => {
+				DBClient.connect(url)
+				.then((db) => {
+					DBClient.setDB(db);
+					return DBClient.loadCollection(collectionName);
+				})
+				.then((collection) => {
+					return colUtil.findMany(collection, mongoQuery);
+				})
+				.then((docs) => {
+					//resolve({"code":200,"body": docs});
+
+					getData()
+				}, (err) => {
+					reject({"code": 404, "body":err.message});
+				});
+		});
+	}
+}
+
+function saveData(path, data){
+console.log('in save data');
 	var collectionName = path[0];
 
 	var promise = new Promise(
@@ -55,11 +118,15 @@ function saveData(path, data){
 			})
 
 			.then((collection) => {
+				console.log('loading collection');
+
 				return saveDataHelper(collection);
 			})
 
-			.then((msg) => {
-				var responseData = {"code": 201, "body": msg.message};
+			.then((data) => {
+				console.log(data);
+
+				var responseData = {"code": 201, "body": data.message};
 				resolve(responseData);
 			},(err) => {
 				displayErr(err);
@@ -121,13 +188,13 @@ function saveData(path, data){
 					colUtil.findOne(collection, mongoQuery)
 
 					.then((doc) => {
-						parentID = doc._id.id;
+						parentID = doc._id.toString();
 						return DBClient.loadCollection(collectionToAddTo);
 					})
 
 					.then((collectionToAddToObj) => {
 						var obj = {};
-						var keyName = collectionName + "_id";
+						var keyName = collectionName + "id";
 						obj[keyName] = parentID;
 						data = _.extend(data, obj);
 						return colUtil.insertOne(collectionToAddToObj, data);
@@ -192,19 +259,19 @@ var server = http.createServer(function(req, resp) {
 
 			case "GET":
 				getData(path).then((docs) => {
-					
+
 					var docStr = JSON.stringify(docs.body);
 
 					resp.writeHead(docs.code, {
 						'Content-Length': docStr.length,
-						'Content-Type': 'text/plain'
+						'Content-Type': 'application/json'
 					});
-					debugger;
+
 					resp.write(docStr);
 					resp.end();
 
 				},(err) => {
-					debugger;
+
 					resp.writeHead(err.code, {
 						'Content-Length': err.body.length,
 						'Content-Type': 'text/plain'
@@ -225,15 +292,24 @@ var server = http.createServer(function(req, resp) {
 					data = JSON.parse(data);
 					saveData(path, data).then((responseData) => {
 
+
+						var respString = JSON.stringify(responseData.body);
+
 						resp.writeHead(responseData.code, {
-							'Content-Length': responseData.body.length,
+							'Content-Length': respString.length,
 							'Content-Type': 'application/json'
 						});
 
-						if (responseData.body.length) {
-							resp.write(responseData.body);
-							resp.end();
-						}
+						resp.write(respString);
+						resp.end();
+
+					}, (err) => {
+						resp.writeHead(err.code, {
+							'Content-Length': err.body.length,
+							'Content-Type': 'text/plain'
+						})
+						resp.write(err.body);
+						resp.end();
 					});
 
 				});
