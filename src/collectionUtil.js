@@ -26,15 +26,29 @@ var colUtil =  {
 	findMany: function(collection, query){
 		var promise = new Promise(
 			(resolve, reject) => {
+				debugger;
 				collection.find(query, (err, docs) => {
-					docs.toArray((err, docArray) => {
-						if (!docArray.length){
-							reject({"message": "No documents found\n", "result": docArray});
-						}
-						else{
-							debugger;
-							resolve(docArray);
-						}
+					debugger;
+					if (err)
+						console.log(err);
+
+					// docs.toArray((err, docArray) => {
+					// 	//debugger;
+					// 	if (!docArray.length){
+					// 		reject("No documents found\n");
+					// 	}
+					// 	else{
+					// 		resolve(docArray);
+					// 	}
+					// });
+				
+					docs.toArray()
+					.then((docArray) => {
+						debugger;
+						console.log(docArray);
+						resolve(docArray);
+					}, (err) => {
+						console.log(err)
 					});
 				});
 			}

@@ -22,13 +22,18 @@ var getData = function(path) {
 				return getDataHelper(path);
 			})
 			.then((docs) => {
-				if (path.length <= 2) {
-					resolve({"code":200,"body": docs});
-				}
+				console.log('got into then function in getData')
+
+				docs = docs === undefined ? [] : docs; 
+				debugger;
+				resolve({"code":200,"body": docs});
 			}, (err) => {
+				console.log("got into err function in getData")
 				reject({"code": 404, "body": err});
 			});
   	});
+
+
 	return promise;
 
 	function getDataHelper (path){
@@ -42,6 +47,7 @@ var getData = function(path) {
 			console.log("Something went wrong with getDataHelper's recursion")
 		}
 		else if (path.length ===2){ //base case of recursion
+			console.log('got into base case')
 			var collectionName = path[0];
 			var mongoQuery = util.parseQuery(path[1]);
 
@@ -62,24 +68,43 @@ var getData = function(path) {
 		else{
 			var promise = new Promise(
 				(resolve, reject) => {
-					
+					console.log('got into else clause')
 					var newPath = path.slice(0,-2);
 
-					getDataHelper(newPath).then((result) => {
+					getDataHelper(newPath).then((docs) => {
+						console.log('got into then clause')
+
 
 						var collectionName = path[path.length-2];
 						var mongoQuery = util.parseQuery(path[path.length-1]);
+						var foreignKeys = _.pluck(docs,"_id");
 
-						var foreignKeys = getIdsFromDocs(result.docs);
+						for (var i=0; i< foreignKeys.length; i++){
+							foreignKeys[i] = foreignKeys[i].toString();
+						}
+						
+						// foreignKeys = foreignKeys.map((value, index) => {
+						// 	value.toString();
+						// });
+						
+
 						var fieldName = path[path.length-4] + "id"; // name of parent collection + "id"
 						mongoQuery[fieldName] = {$in: foreignKeys};
-
+						debugger;
 						DBClient.loadCollection(collectionName)
 						.then((collection) => {
-							return colUtil.findMany(collection, mongoQuery);
+							colUtil.findMany(collection, mongoQuery).then((result) => {
+								console.log('Successfully found many' + result)
+							}, (err) => {
+								console.log(err)
+							});
+							//return colUtil.findMany(collection, mongoQuery);
 						})
 						.then((docs) => {
 							resolve(docs);
+						}, (err) => {
+							//console.log(err);
+							reject(err);
 						});
 					});
 				}
@@ -88,10 +113,6 @@ var getData = function(path) {
 		return promise;
 	};
 };
-
-function getIdsFromDocs(docs){
-	return [112,1113];
-}
 
 function saveData(path, data){
 console.log('in save data');
@@ -248,8 +269,14 @@ var server = http.createServer(function(req, resp) {
 
 			case "GET":
 				getData(path).then((docs) => {
+					//DBClient.db.close();
+					console.log("got into then clause in GET", docs)
+					debugger;
+					if (docs.body)
+						var docStr = JSON.stringify(docs.body);
+					else
+						var docStr = "";
 
-					var docStr = JSON.stringify(docs.body);
 
 					resp.writeHead(docs.code, {
 						'Content-Length': docStr.length,
@@ -260,7 +287,8 @@ var server = http.createServer(function(req, resp) {
 					resp.end();
 
 				},(err) => {
-
+					//DBClient.db.close();
+					console.log("got into err clause in GET", err)
 					resp.writeHead(err.code, {
 						'Content-Length': err.body.length,
 						'Content-Type': 'text/plain'
