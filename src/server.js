@@ -45,7 +45,7 @@ function getData(path){
 	return promise;
 }
 
-function deleteData(path){
+function delData(path){
 
 	var promise = new Promise ((resolve, reject) => {
 
@@ -54,8 +54,13 @@ function deleteData(path){
 			var collection = resolveObj.collection;
 			var mongoQuery = resolveObj.mongoQuery;
 
-			
+			collection.deleteMany(mongoQuery, (err, result) => {
+				if (err) reject ({"code": 500, "body": err});
 
+				var numDocsDeleted = result.deletedCount;
+				var responseData = {"code": 200, "body": "Deleteted "+numDocsDeleted+" documents."};
+				resolve(responseData);
+			});
 		}, (err) => {
 			var responseData = {"code": 500, "body": err};
 			reject(responseData);
@@ -169,10 +174,10 @@ function saveData(path, data) {
 				return saveDataHelper(collection);
 			})
 
-			.then((data) => {
-				console.log(data);
-
-				var responseData = {"code": 201, "body": data.message};
+			.then((docs) => {
+				debugger
+				docs = util.sanitizeId(docs);
+				var responseData = {"code": 201, "body": docs};
 				resolve(responseData);
 			},(err) => {
 				var responseData = {"code": 500, "body": err.message};
@@ -194,13 +199,14 @@ function saveData(path, data) {
 		if (path.length === 1){
 			var promise = new Promise(
 				(resolve, reject) => {
-					collection.insertOne(data, function(err, data){
+					collection.insertOne(data, function(err, result){
 						if (err){
 				  	  		reject(err);
 				  	  	}
 				  	  	else{
-				  	  		updateSchema(data);
-				  	  		resolve({ "code": 200, "body":"Successfully added new document\n"});
+				  	  		//updateSchema(data);
+				  	  		debugger;
+				  	  		resolve(result.ops[0]);
 				  	  	}
 					});
 				}
@@ -286,11 +292,6 @@ function saveData(path, data) {
 	}
 }
 
-function delData(path){
-	var promise = new Promise ((resolve, reject))
-
-}
-
 
 var server = http.createServer(function(req, resp) {
 
@@ -348,7 +349,7 @@ var server = http.createServer(function(req, resp) {
 				req.on('end', function(){
 					data = JSON.parse(data);
 					saveData(path, data).then((responseData) => {
-
+						debugger;
 
 						var respString = JSON.stringify(responseData.body);
 
@@ -374,14 +375,15 @@ var server = http.createServer(function(req, resp) {
 
 			case "DELETE":
 
-				delData(path).then((response) => {
+				delData(path).then((responseData) => {
+					debugger;
+					var respString = JSON.stringify(responseData.body);
 
-
-					resp.writeHead(response.code, {
-						'Content-Length': 0,
+					resp.writeHead(responseData.code, {
+						'Content-Length': respString.length,
 						'Content-Type': 'application/json'
 					})
-
+					resp.write(respString);
 					resp.end();
 
 				},(err) => {

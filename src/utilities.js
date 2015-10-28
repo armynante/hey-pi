@@ -61,12 +61,20 @@ module.exports = {
 	}, 
 
 	sanitizeId: function (docs){
+
 		var clean = function(doc){ 
 			var id = doc._id;
 			delete doc["_id"];
 			doc["id"] = id.toString();
 			return doc;
 		};
-		return docs.map(clean);
+
+		debugger;
+
+		if (docs.toString() === '[object Object]'){
+			return clean(docs);
+		} else {
+			return docs.map(clean);
+		}
 	}
 }
