@@ -19,12 +19,17 @@ DBClient.connect(url)
 
 function getData(path) {
 	//chunck the path into sections and build query interativly
+
 	var pathArray = [];
 	if (path.length % 2 === 1 ) path.push("");
 
 		// load client
 	var promise = new Promise(
 		(resolve, reject) => {
+
+			if (path.length === 0 ) {
+				resolve({code:200, body:"welcome to hey-pi!"})
+			}
 
 			for (var i = 0; i < path.length; i += 2) {
 					pathArray.push([path[i], path[i + 1]]);
@@ -270,7 +275,17 @@ function displayErr (reason){
 
 var server = http.createServer(function(req, resp) {
 
-	if (req.url.match(/^\/api\//) !== null  ){
+	resp.setHeader('Access-Control-Allow-Origin', '*');
+	resp.setHeader('Access-Control-Request-Method', '*');
+	resp.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET, POST, PUT');
+	resp.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Key');
+	if ( req.method === 'OPTIONS' ) {
+		resp.writeHead(200);
+		resp.end();
+		return;
+	}
+
+	if (req.url.match(/^\/api/) !== null  ){
 
 		var path = util.stripPath(req.url);
 		var data = "";
