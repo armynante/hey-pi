@@ -58,5 +58,15 @@ module.exports = {
 		}
 
 		return mongoQuery;
+	}, 
+
+	sanitizeId: function (docs){
+		var clean = function(doc){ 
+			var id = doc._id;
+			delete doc["_id"];
+			doc["id"] = id.toString();
+			return doc;
+		};
+		return docs.map(clean);
 	}
 }

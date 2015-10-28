@@ -17,8 +17,54 @@ DBClient.connect(url)
 	console.log("database loaded");
 });
 
-function getData(path) {
-	//chunck the path into sections and build query interativly
+function getData(path){
+
+	var promise = new Promise ((resolve, reject) => {
+
+		propagateQuery(path).then((resolveObj) => {
+			debugger;
+			var collection = resolveObj.collection;
+			var mongoQuery = resolveObj.mongoQuery;
+
+			collection.find(mongoQuery).toArray((err, docs) => {
+				
+				console.log(err)
+				docs = util.sanitizeId(docs);
+
+				if (err) reject({"code": 500, "body": err});
+
+				var responseData = {"code": 200, "body": docs};
+				resolve(responseData);
+			});
+
+		}, (err) => {
+			var responseData = {"code": 500, "body": err};
+			reject(responseData);
+		});
+	});
+	return promise;
+}
+
+function deleteData(path){
+
+	var promise = new Promise ((resolve, reject) => {
+
+		propagateQuery(path).then((resolveObj) => {
+			debugger;
+			var collection = resolveObj.collection;
+			var mongoQuery = resolveObj.mongoQuery;
+
+			
+
+		}, (err) => {
+			var responseData = {"code": 500, "body": err};
+			reject(responseData);
+		});
+	});
+	return promise;
+}
+
+function propagateQuery(path) {
 
 	var pathArray = [];
 	if (path.length % 2 === 1 ) path.push("");
@@ -43,7 +89,7 @@ function getData(path) {
 					 var mongoQuery = util.parseQuery(query);
 
 					 if (mongoQuery === null) {
-						 reject({code:400, body:"bad request"});
+						 reject("bad request");
 					 }
 					 mongoQuery = _.extend(mongoQuery,result.fkQuery);
 
@@ -51,79 +97,54 @@ function getData(path) {
 						 (resolve, reject) => {
 						 DBClient.loadCollection(collectionName)
 						 .then((collection) => {
+							if (index !== (pathArray.length-1)){
+								var cursor = collection.find(mongoQuery);
+								console.log('got into if')
+								cursor.toArray((err, docs) => {
+									 if (err) {
+										 reject(err);
+									 } else {
+										 var keys = _.pluck(docs,"_id");
 
-							 collection.find(mongoQuery)
-							 .toArray((err, docs) => {
-								 if (err) {
-									 reject(err);
-								 } else {
-									 var keys = _.pluck(docs,"_id");
+										 for (var i = 0; i < keys.length; i++) {
+											 keys[i] = keys[i].toString();
+										 };
 
-									 for (var i = 0; i < keys.length; i++) {
-										 keys[i] = keys[i].toString();
-									 };
+										 var fkFieldName = collectionName + "id";
+										 var fkQuery = {};
+										 fkQuery[fkFieldName] = { $in: keys };
+										resolve({doc: docs, fkQuery: fkQuery});
 
-									 var fkFieldName = collectionName + "id";
-									 var fkQuery = {};
-									 fkQuery[fkFieldName] = { $in: keys };
-									resolve({doc: docs, fkQuery: fkQuery});
-
-								 }
-							 })
+									 }
+								 })
+							}
+							else {
+								console.log('got into else')
+								debugger;
+								var resolveObj = {};
+								resolveObj["collection"] = collection;
+								resolveObj["mongoQuery"] = mongoQuery;
+								resolve(resolveObj);
+							}
 						 });
 					 });
 					 return promise;
 				 });
 			}, new Promise(
 				(resolve, reject) => { //initial value given to reduce
-				console.log("inside reduce");
-
-				var collectionName = pathArray[0][0];
-				var query = pathArray[0][1];
-
-				//remove frist from array to prevent reduce from acting on it
-				pathArray.splice(0,1);
-
-				var mongoQuery = util.parseQuery(query);
-
-				if (mongoQuery === null) {
-					reject({code:400, body:"bad request"});
-					//break;
-				}
-
-				DBClient.loadCollection(collectionName)
-				.then((collection) => {
-
-					collection.find(mongoQuery)
-					.toArray((err, docs) => {
-						if (err) {
-
-							reject({ code: 500, body: "server error: " + err});
-						} else {
-							var keys = _.pluck(docs,"_id");
-
-							for (var i = 0; i < keys.length; i++) {
-								keys[i] = keys[i].toString();
-							};
-
-							var fkFieldName = collectionName + "id";
-							var fkQuery = {};
-							fkQuery[fkFieldName] = { $in: keys };
-
-							var obj = {doc: docs, fkQuery: fkQuery};
-							resolve(obj);
-						}
-					})
+					var result = {};
+					result["fkQuery"] = {};
+					resolve(result);
 				})
-			}));
+			);
 
-		chain.then((result) => {
-				var responseData = {"code": 200, "body": result.doc};
-				resolve(responseData);
+		chain.then((cursor) => {
+				//var responseData = {"code": 200, "body": result.doc};
+				resolve(cursor);
 			}, (err) => {
 				console.log('got into error clause after chain is finished' + err);
-				var responseData = {"code": 500, "body": err};
-				reject(responseData);
+				//var responseData = {"code": 500, "body": err};
+				reject(err);
 		});
 	});
 	return promise;
@@ -154,7 +175,6 @@ function saveData(path, data) {
 				var responseData = {"code": 201, "body": data.message};
 				resolve(responseData);
 			},(err) => {
-				displayErr(err);
 				var responseData = {"code": 500, "body": err.message};
 				console.log("response data is: "+ responseData)
 				resolve(responseData);
@@ -262,22 +282,21 @@ function saveData(path, data) {
 					}
 				}
 			});
-		})
-		.catch(displayErr);
+		}, (err) => {console.log(err);});
 	}
 }
 
-function displayErr (reason){
+function delData(path){
+	var promise = new Promise ((resolve, reject))
 
-	console.log(reason);
-	return;
 }
+
 
 var server = http.createServer(function(req, resp) {
 
 	resp.setHeader('Access-Control-Allow-Origin', '*');
 	resp.setHeader('Access-Control-Request-Method', '*');
-	resp.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET, POST, PUT');
+	resp.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET, POST, PUT, DELETE');
 	resp.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Key');
 	if ( req.method === 'OPTIONS' ) {
 		resp.writeHead(200);
@@ -295,6 +314,7 @@ var server = http.createServer(function(req, resp) {
 			case "GET":
 
 				getData(path).then((response) => {
+					debugger;
 
 					var responseStr = JSON.stringify(response.body);
 
@@ -350,6 +370,31 @@ var server = http.createServer(function(req, resp) {
 					});
 
 				});
+				break;
+
+			case "DELETE":
+
+				delData(path).then((response) => {
+
+
+					resp.writeHead(response.code, {
+						'Content-Length': 0,
+						'Content-Type': 'application/json'
+					})
+
+					resp.end();
+
+				},(err) => {
+
+					resp.writeHead(err.code, {
+						'Content-Length': err.body.length,
+						'Content-Type': 'text/plain'
+					})
+					resp.write(err.body);
+					resp.end();
+				});
+
+
 				break;
 		}
 	} else {
