@@ -270,7 +270,7 @@ function displayErr (reason){
 
 var server = http.createServer(function(req, resp) {
 
-	if (req.url!=="/favicon.ico"){
+	if (req.url.match(/^\/api\//).length > 0){
 
 		var path = util.stripPath(req.url);
 		var data = "";

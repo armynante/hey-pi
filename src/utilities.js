@@ -4,8 +4,8 @@ module.exports = {
 	},
 	stripPath: function(path){
 
-		path = path.split("/")
-		path.splice(0,1);
+		path = path.split("/");
+		path.splice(0,2);
 		return path;
 	},
 	parseQuery: function(query){
