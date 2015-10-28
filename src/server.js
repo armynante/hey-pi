@@ -11,19 +11,23 @@ const DBClient = new MongoClient();
 
 //TODO: make sure user only queries for one doc when doing POST
 
+DBClient.connect(url)
+.then((db) => {
+	DBClient.setDB(db);
+	console.log("database loaded");
+});
+
 function getData(path) {
 	//chunck the path into sections and build query interativly
 	var pathArray = [];
 	if (path.length % 2 === 1 ) path.push("");
 
 		// load client
-		DBClient.connect(url)
-		.then((db) => {
-			DBClient.setDB(db);
+	var promise = new Promise(
+		(resolve, reject) => {
 
-			console.log("db started");
 			for (var i = 0; i < path.length; i += 2) {
-				pathArray.push([path[i], path[i + 1]]);
+					pathArray.push([path[i], path[i + 1]]);
 			}
 
 			var chain = pathArray.reduce((previous, item, index, array)=> {
@@ -109,11 +113,15 @@ function getData(path) {
 			}));
 
 		chain.then((result) => {
-				debugger;
+				var responseData = {"code": 200, "body": result.doc};
+				resolve(responseData);
 			}, (err) => {
-				console.log('got into error clause after chain is finished' + err)
+				console.log('got into error clause after chain is finished' + err);
+				var responseData = {"code": 500, "body": err};
+				reject(responseData);
 		});
 	});
+	return promise;
 }
 
 function saveData(path, data) {
@@ -270,8 +278,7 @@ var server = http.createServer(function(req, resp) {
 		switch(req.method){
 
 			case "GET":
-			getData(path);
-			/*
+
 				getData(path).then((response) => {
 
 					var responseStr = JSON.stringify(response.body);
@@ -293,7 +300,7 @@ var server = http.createServer(function(req, resp) {
 					resp.write(err.body);
 					resp.end();
 				});
-				*/
+
 
 				break;
 
