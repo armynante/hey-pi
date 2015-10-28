@@ -270,7 +270,7 @@ function displayErr (reason){
 
 var server = http.createServer(function(req, resp) {
 
-	if (req.url.match(/^\/api\//).length > 0){
+	if (req.url.match(/^\/api\//) !== null  ){
 
 		var path = util.stripPath(req.url);
 		var data = "";
@@ -337,6 +337,13 @@ var server = http.createServer(function(req, resp) {
 				});
 				break;
 		}
+	} else {
+		resp.writeHead(400, {
+			'Content-Length': 15,
+			'Content-Type': 'text/plain'
+		});
+		resp.write('route not found');
+		resp.end();
 	}
 
 });
