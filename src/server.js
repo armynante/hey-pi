@@ -200,8 +200,6 @@ function saveData(path, data) {
 				  	  		reject(err);
 				  	  	}
 				  	  	else{
-				  	  		//updateSchema(data);
-				  	  		debugger;
 				  	  		resolve(result.ops[0]);
 				  	  	}
 					});
@@ -211,12 +209,14 @@ function saveData(path, data) {
 		}
 
 		else if (path.length == 2) {
+			//TODO: need to take this out into its own function!!!
 
 			var promise = new Promise(
 				(resolve, reject) => {
 					colUtil.updateOne(collection, mongoQuery, data)
-					.then((message) => {
-						resolve(message);
+					.then((result) => {
+						resolve(result)
+						
 					}, (err) => {
 						reject(err);
 					})
@@ -247,8 +247,9 @@ function saveData(path, data) {
 						return colUtil.insertOne(collectionToAddToObj, data);
 					})
 
-					.then((msg) => {
-						resolve(msg);
+					.then((result) => {
+						debugger;
+						resolve(result.ops[0]);
 					},(err) => {
 						reject(err);
 					});

@@ -59,14 +59,12 @@ var colUtil =  {
 	insertOne: function(collection, data) {
 		var promise = new Promise(
 			(resolve, reject) => {
-				collection.insertOne(data,function(err, data){
+				collection.insertOne(data,function(err, result){
 					if (err){
 			  	  		reject(err);
 			  	  	}
 			  	  	else{
-			  	  		//updateSchema(data);
-			  	  		//TODO: message should also tell user what the new doc looks like now
-			  	  		resolve({"message": "Successfully added new document\n"});
+			  	  		resolve(result);
 			  	  	}
 				});
 			}
