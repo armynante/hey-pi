@@ -22,39 +22,39 @@ var colUtil =  {
 		);
 		return promise;
 	},
-
-	findMany: function(collection, query){
-		var promise = new Promise(
-			(resolve, reject) => {
-				debugger;
-				collection.find(query, (err, docs) => {
-					debugger;
-					if (err)
-						console.log(err);
-
-					// docs.toArray((err, docArray) => {
-					// 	//debugger;
-					// 	if (!docArray.length){
-					// 		reject("No documents found\n");
-					// 	}
-					// 	else{
-					// 		resolve(docArray);
-					// 	}
-					// });
-				
-					docs.toArray()
-					.then((docArray) => {
-						debugger;
-						console.log(docArray);
-						resolve(docArray);
-					}, (err) => {
-						console.log(err)
-					});
-				});
-			}
-		);
-		return promise;
-	},
+	//
+	// findMany: function(collection, query){
+	// 	var promise = new Promise(
+	// 		(resolve, reject) => {
+	// 			debugger;
+	// 			collection.find(query, (err, docs) => {
+	// 				debugger;
+	// 				if (err) console.log(err);
+	//
+	// 				// docs.toArray((err, docArray) => {
+	// 				// 	//debugger;
+	// 				// 	if (!docArray.length){
+	// 				// 		reject("No documents found\n");
+	// 				// 	}
+	// 				// 	else{
+	// 				// 		resolve(docArray);
+	// 				// 	}
+	// 				// });
+	//
+	// 				docs.toArray()
+	// 				.then((docArray) => {
+	// 					debugger;
+	// 					console.log(docArray);
+	// 					resolve(docArray);
+	// 				}, (err) => {
+	// 					debugger;
+	// 					reject(err);
+	// 					console.log(err)
+	// 				});
+	// 			}
+	// 		})
+	// 	return promise;
+	// },
 
 	insertOne: function(collection, data) {
 		var promise = new Promise(

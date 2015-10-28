@@ -11,111 +11,113 @@ const DBClient = new MongoClient();
 
 //TODO: make sure user only queries for one doc when doing POST
 
-var getData = function(path) {
+function getData(path) {
+	//chunck the path into sections and build query interativly
+	var pathArray = [];
+	if (path.length % 2 === 1 ) path.push("");
 
-	var promise = new Promise(
-		(resolve, reject) => {
+		// load client
+		DBClient.connect(url)
+		.then((db) => {
+			DBClient.setDB(db);
 
-			DBClient.connect(url)
-			.then((db) => {
-				DBClient.setDB(db);
-				return getDataHelper(path);
-			})
-			.then((docs) => {
-				console.log('got into then function in getData')
+			console.log("db started");
+			for (var i = 0; i < path.length; i += 2) {
+				pathArray.push([path[i], path[i + 1]]);
+			}
 
-				docs = docs === undefined ? [] : docs; 
-				debugger;
-				resolve({"code":200,"body": docs});
-			}, (err) => {
-				console.log("got into err function in getData")
-				reject({"code": 404, "body": err});
-			});
-  	});
+			var chain = pathArray.reduce((previous, item, index, array)=> {
 
+				 return previous.then((result) => {
+					 var collectionName = item[0];
+					 var query = item[1];
+					 var mongoQuery = util.parseQuery(query);
 
-	return promise;
+					 if (mongoQuery === null) {
+						 reject({code:400, body:"bad request"});
+					 }
+					 mongoQuery = _.extend(mongoQuery,result.fkQuery);
 
-	function getDataHelper (path){
-		
-		if (path.length % 2 === 1 ){
-			path.push("");
-		}
-		//TODO: do the same padding in other functions
+					 var promise = new Promise (
+						 (resolve, reject) => {
+						 DBClient.loadCollection(collectionName)
+						 .then((collection) => {
 
-		if (path.length < 2){
-			console.log("Something went wrong with getDataHelper's recursion")
-		}
-		else if (path.length ===2){ //base case of recursion
-			console.log('got into base case')
-			var collectionName = path[0];
-			var mongoQuery = util.parseQuery(path[1]);
+							 collection.find(mongoQuery)
+							 .toArray((err, docs) => {
+								 if (err) {
+									 reject(err);
+								 } else {
+									 var keys = _.pluck(docs,"_id");
 
-			var promise = new Promise(
-				(resolve, reject) => {
-					DBClient.loadCollection(collectionName)
-					.then((collection) => {
-						return colUtil.findMany(collection, mongoQuery);
-					})
-					.then((docs) => {
-						resolve(docs);
-					}, (err) => {
-						reject(err);
-					});
-	  		});
-		}
+									 for (var i = 0; i < keys.length; i++) {
+										 keys[i] = keys[i].toString();
+									 };
 
-		else{
-			var promise = new Promise(
-				(resolve, reject) => {
-					console.log('got into else clause')
-					var newPath = path.slice(0,-2);
+									 var fkFieldName = collectionName + "id";
+									 var fkQuery = {};
+									 fkQuery[fkFieldName] = { $in: keys };
+									resolve({doc: docs, fkQuery: fkQuery});
 
-					getDataHelper(newPath).then((docs) => {
-						console.log('got into then clause')
+								 }
+							 })
+						 });
+					 });
+					 return promise;
+				 });
+			}, new Promise(
+				(resolve, reject) => { //initial value given to reduce
+				console.log("inside reduce");
 
+				var collectionName = pathArray[0][0];
+				var query = pathArray[0][1];
 
-						var collectionName = path[path.length-2];
-						var mongoQuery = util.parseQuery(path[path.length-1]);
-						var foreignKeys = _.pluck(docs,"_id");
+				//remove frist from array to prevent reduce from acting on it
+				pathArray.splice(0,1);
 
-						for (var i=0; i< foreignKeys.length; i++){
-							foreignKeys[i] = foreignKeys[i].toString();
-						}
-						
-						// foreignKeys = foreignKeys.map((value, index) => {
-						// 	value.toString();
-						// });
-						
+				var mongoQuery = util.parseQuery(query);
 
-						var fieldName = path[path.length-4] + "id"; // name of parent collection + "id"
-						mongoQuery[fieldName] = {$in: foreignKeys};
-						debugger;
-						DBClient.loadCollection(collectionName)
-						.then((collection) => {
-							colUtil.findMany(collection, mongoQuery).then((result) => {
-								console.log('Successfully found many' + result)
-							}, (err) => {
-								console.log(err)
-							});
-							//return colUtil.findMany(collection, mongoQuery);
-						})
-						.then((docs) => {
-							resolve(docs);
-						}, (err) => {
-							//console.log(err);
-							reject(err);
-						});
-					});
+				if (mongoQuery === null) {
+					reject({code:400, body:"bad request"});
+					//break;
 				}
-			);	
-		}
-		return promise;
-	};
-};
 
-function saveData(path, data){
-console.log('in save data');
+				DBClient.loadCollection(collectionName)
+				.then((collection) => {
+
+					collection.find(mongoQuery)
+					.toArray((err, docs) => {
+						if (err) {
+
+							reject({ code: 500, body: "server error: " + err});
+						} else {
+							var keys = _.pluck(docs,"_id");
+
+							for (var i = 0; i < keys.length; i++) {
+								keys[i] = keys[i].toString();
+							};
+
+							var fkFieldName = collectionName + "id";
+							var fkQuery = {};
+							fkQuery[fkFieldName] = { $in: keys };
+
+							var obj = {doc: docs, fkQuery: fkQuery};
+							resolve(obj);
+						}
+					})
+				})
+			}));
+
+		chain.then((result) => {
+				debugger;
+			}, (err) => {
+				console.log('got into error clause after chain is finished' + err)
+		});
+	});
+}
+
+function saveData(path, data) {
+	console.log('in save data');
 	var collectionName = path[0];
 
 	var promise = new Promise(
@@ -268,27 +270,22 @@ var server = http.createServer(function(req, resp) {
 		switch(req.method){
 
 			case "GET":
-				getData(path).then((docs) => {
-					//DBClient.db.close();
-					console.log("got into then clause in GET", docs)
-					debugger;
-					if (docs.body)
-						var docStr = JSON.stringify(docs.body);
-					else
-						var docStr = "";
+			getData(path);
+			/*
+				getData(path).then((response) => {
 
+					var responseStr = JSON.stringify(response.body);
 
-					resp.writeHead(docs.code, {
-						'Content-Length': docStr.length,
+					resp.writeHead(response.code, {
+						'Content-Length': responseStr.length,
 						'Content-Type': 'application/json'
 					});
 
-					resp.write(docStr);
+					resp.write(responseStr);
 					resp.end();
 
 				},(err) => {
-					//DBClient.db.close();
-					console.log("got into err clause in GET", err)
+
 					resp.writeHead(err.code, {
 						'Content-Length': err.body.length,
 						'Content-Type': 'text/plain'
@@ -296,6 +293,7 @@ var server = http.createServer(function(req, resp) {
 					resp.write(err.body);
 					resp.end();
 				});
+				*/
 
 				break;
 
