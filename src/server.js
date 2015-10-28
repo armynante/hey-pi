@@ -17,17 +17,17 @@ DBClient.connect(url)
 	console.log("database loaded");
 });
 
-function getData(path){
+function getData(path) {
 
 	var promise = new Promise ((resolve, reject) => {
 
 		propagateQuery(path).then((resolveObj) => {
-			debugger;
+
 			var collection = resolveObj.collection;
 			var mongoQuery = resolveObj.mongoQuery;
 
 			collection.find(mongoQuery).toArray((err, docs) => {
-				
+
 				console.log(err)
 				docs = util.sanitizeId(docs);
 
@@ -77,10 +77,6 @@ function propagateQuery(path) {
 		// load client
 	var promise = new Promise(
 		(resolve, reject) => {
-
-			if (path.length === 0 ) {
-				resolve({code:200, body:"welcome to hey-pi!"})
-			}
 
 			for (var i = 0; i < path.length; i += 2) {
 					pathArray.push([path[i], path[i + 1]]);
@@ -305,17 +301,27 @@ var server = http.createServer(function(req, resp) {
 		return;
 	}
 
-	if (req.url.match(/^\/api/) !== null  ){
+	if (req.url.match(/^\/api/) !== null ){
 
 		var path = util.stripPath(req.url);
 		var data = "";
+
+		if (path.length === 0) {
+			resp.writeHead(200, {
+				'Content-Length': 17,
+				'Content-Type': 'text/plain'
+			});
+
+
+			resp.write('Welcome to hey-pi');
+			resp.end();
+		}
 
 		switch(req.method){
 
 			case "GET":
 
 				getData(path).then((response) => {
-					debugger;
 
 					var responseStr = JSON.stringify(response.body);
 
