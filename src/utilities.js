@@ -63,22 +63,11 @@ module.exports = {
 		return mongoQuery;
 	},
 
-	sanitizeId: function (docs){
-
-		var clean = function(doc){
-			var id = doc._id;
-			delete doc["_id"];
-			debugger;
-			doc["id"] = id.toString();
-			return doc;
-		};
-
-		if (docs.toString().split(",")[0] !== '[object Object]'){
-			debugger;
-			return clean(docs);
-		} else {
-			debugger;
-			return docs.map(clean);
-		}
+	sanitizeId: function(doc){
+		var id = doc._id;
+		delete doc["_id"];
+		debugger;
+		doc["id"] = id.toString();
+		return doc;
 	}
 }

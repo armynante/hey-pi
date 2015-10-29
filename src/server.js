@@ -29,7 +29,7 @@ function getData(path) {
 			collection.find(mongoQuery).toArray((err, docs) => {
 
 				if (docs !== undefined && docs !== null && docs.length > 0) {
-					docs = util.sanitizeId(docs);
+					docs = docs.map(util.sanitizeId);
 				}
 
 				if (err) reject({"code": 500, "body": err});
@@ -171,9 +171,12 @@ function saveData(path, data) {
 			})
 
 			.then((docs) => {
+				debugger;
 
-				docs = util.sanitizeId(docs);
-				var responseData = {"code": 201, "body": docs};
+				docs = docs.map(util.sanitizeId); // docs is an array of one doc
+
+				var responseData = {"code": 201, "body": docs.pop()};
+				console.log(responseData);
 				resolve(responseData);
 			},(err) => {
 				var responseData = {"code": 500, "body": err.message};
@@ -200,7 +203,8 @@ function saveData(path, data) {
 				  	  		reject(err);
 				  	  	}
 				  	  	else{
-				  	  		resolve(result.ops[0]);
+				  	  		debugger;
+				  	  		resolve(result.ops);
 				  	  	}
 					});
 				}
@@ -249,7 +253,7 @@ function saveData(path, data) {
 
 					.then((result) => {
 						debugger;
-						resolve(result.ops[0]);
+						resolve(result.ops);
 					},(err) => {
 						reject(err);
 					});
@@ -355,6 +359,8 @@ var server = http.createServer(function(req, resp) {
 				req.on('end', function(){
 					data = JSON.parse(data);
 					saveData(path, data).then((responseData) => {
+						console.log("got response back from SaveData: ")
+						console.log(responseData)
 
 						var respString = JSON.stringify(responseData.body);
 
