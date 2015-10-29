@@ -69,8 +69,6 @@ module.exports = {
 			return doc;
 		};
 
-		debugger;
-
 		if (docs.toString() !== '[object Object]'){
 			return clean(docs);
 		} else {
