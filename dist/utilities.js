@@ -63,13 +63,15 @@ module.exports = {
 			doc["id"] = id.toString();
 			return doc;
 		};
+		if (docs.length > 0) {
 
-		debugger;
-
-		if (docs.toString() !== '[object Object]') {
-			return clean(docs);
+			if (docs.toString() !== '[object Object]') {
+				return clean(docs);
+			} else {
+				return docs.map(clean);
+			}
 		} else {
-			return docs.map(clean);
+			return docs;
 		}
 	}
 };
