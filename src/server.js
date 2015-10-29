@@ -30,7 +30,7 @@ function getData(path) {
 
 				console.log(err)
 				debugger;
-				docs = d(docs);
+				docs = (docs);
 
 				if (err) reject({"code": 500, "body": err});
 
