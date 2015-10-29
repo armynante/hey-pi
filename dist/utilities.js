@@ -27,12 +27,19 @@ module.exports = {
 
 		var queryWords = query.split('_');
 
+		console.log(queryWords);
+		debugger;
+
 		var fieldName = queryWords[0];
 		var lastWord = queryWords[queryWords.length - 1];
 
-		lastWord = lastWord.match(/^(\d)*$/) === null ? lastWord : parseInt(lastWord);
-		lastWord = lastWord.match(/^(true)$/) === null ? lastWord : true;
-		lastWord = lastWord.match(/^(false)$/) === null ? lastWord : false;
+		if (lastWord.match(/^(\d)*$/) !== null) {
+			lastWord = parseInt(lastWord);
+		} else if (lastWord.match(/^(true)$/) !== null) {
+			lastWord = true;
+		} else if (lastWord.match(/^(false)$/) !== null) {
+			lastWord = false;
+		}
 
 		var mongoQuery = {};
 		var now = new Date().toISOString();
