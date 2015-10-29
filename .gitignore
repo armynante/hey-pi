@@ -28,11 +28,3 @@ node_modules
 .#server.js
 .#index.js
 .DS_Store
-dist/utilities.js
-dist/server.js.map
-dist/server.js
-dist/MongoClient.js.map
-dist/MongoClient.js
-dist/collectionUtil.js.map
-dist/collectionUtil.js
-dist/utilities.js.map
