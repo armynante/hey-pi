@@ -1,3 +1,5 @@
+var ObjectID = require("mongodb").ObjectID;
+
 module.exports = {
 	getFieldNames: function(collection){
 		return Object.keys(collection);
@@ -55,6 +57,10 @@ module.exports = {
 		else if (query.match(/is/)){
 			mongoQuery[fieldName] = lastWord;
 		}
+		else if (query.match(/^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/i)) {
+			var id = new ObjectID(lastWord);
+			mongoQuery["_id"] = id;
+		}
 		else{
 			console.log('does not match any patterns')
 			mongoQuery = null;
@@ -66,7 +72,6 @@ module.exports = {
 	sanitizeId: function(doc){
 		var id = doc._id;
 		delete doc["_id"];
-		debugger;
 		doc["id"] = id.toString();
 		return doc;
 	}
