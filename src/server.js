@@ -216,7 +216,7 @@ function saveData(path, data) {
 					colUtil.updateOne(collection, mongoQuery, data)
 					.then((result) => {
 						resolve(result)
-						
+
 					}, (err) => {
 						reject(err);
 					})
@@ -312,7 +312,6 @@ var server = http.createServer(function(req, resp) {
 				'Content-Length': 17,
 				'Content-Type': 'text/plain'
 			});
-
 
 			resp.write('Welcome to hey-pi');
 			resp.end();
