@@ -88,6 +88,8 @@ function propagateQuery(path) {
 					 var collectionName = item[0];
 					 var query = item[1];
 
+					 debugger;
+
 					 var mongoQuery = util.parseQuery(query);
 
 					 if (mongoQuery === null) {
@@ -401,6 +403,7 @@ var server = http.createServer(function(req, resp) {
 			case "GET":
 
 				getData(path).then((response) => {
+					debugger;
 
 					var responseStr = JSON.stringify(response.body);
 
