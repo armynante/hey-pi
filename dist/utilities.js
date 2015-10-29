@@ -66,7 +66,7 @@ module.exports = {
 
 		debugger;
 
-		if (docs.toString() === '[object Object]') {
+		if (docs.toString() !== '[object Object]') {
 			return clean(docs);
 		} else {
 			return docs.map(clean);

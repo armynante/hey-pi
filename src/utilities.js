@@ -58,11 +58,11 @@ module.exports = {
 		}
 
 		return mongoQuery;
-	}, 
+	},
 
 	sanitizeId: function (docs){
 
-		var clean = function(doc){ 
+		var clean = function(doc){
 			var id = doc._id;
 			delete doc["_id"];
 			doc["id"] = id.toString();
@@ -71,7 +71,7 @@ module.exports = {
 
 		debugger;
 
-		if (docs.toString() === '[object Object]'){
+		if (docs.toString() !== '[object Object]'){
 			return clean(docs);
 		} else {
 			return docs.map(clean);
