@@ -1,4 +1,6 @@
-'use strict';
+"use strict";
+
+var ObjectID = require("mongodb").ObjectID;
 
 module.exports = {
 	getFieldNames: function getFieldNames(collection) {
@@ -48,6 +50,9 @@ module.exports = {
 			mongoQuery[fieldName] = { $lt: now };
 		} else if (query.match(/is/)) {
 			mongoQuery[fieldName] = lastWord;
+		} else if (query.match(/^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/i)) {
+			var id = new ObjectID(lastWord);
+			mongoQuery["_id"] = id;
 		} else {
 			console.log('does not match any patterns');
 			mongoQuery = null;
@@ -56,23 +61,11 @@ module.exports = {
 		return mongoQuery;
 	},
 
-	sanitizeId: function sanitizeId(docs) {
-
-		var clean = function clean(doc) {
-			var id = doc._id;
-			delete doc["_id"];
-			debugger;
-			doc["id"] = id.toString();
-			return doc;
-		};
-
-		if (docs.toString().split(",")[0] !== '[object Object]') {
-			debugger;
-			return clean(docs);
-		} else {
-			debugger;
-			return docs.map(clean);
-		}
+	sanitizeId: function sanitizeId(doc) {
+		var id = doc._id;
+		delete doc["_id"];
+		doc["id"] = id.toString();
+		return doc;
 	}
 };
 //# sourceMappingURL=utilities.js.map
