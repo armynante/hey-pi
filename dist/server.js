@@ -26,15 +26,15 @@ function getData(path) {
 	var promise = new Promise(function (resolve, reject) {
 
 		propagateQuery(path).then(function (resolveObj) {
-
+			debugger;
 			var collection = resolveObj.collection;
 			var mongoQuery = resolveObj.mongoQuery;
 
 			collection.find(mongoQuery).toArray(function (err, docs) {
 
-				if (docs !== undefined && docs !== null && docs.length > 0) {
-					docs = docs.map(util.sanitizeId);
-				}
+				console.log(err);
+				debugger;
+				docs = d(docs);
 
 				if (err) reject({ "code": 500, "body": err });
 
@@ -54,7 +54,6 @@ function delData(path) {
 	var promise = new Promise(function (resolve, reject) {
 
 		propagateQuery(path).then(function (resolveObj) {
-
 			var collection = resolveObj.collection;
 			var mongoQuery = resolveObj.mongoQuery;
 
@@ -90,11 +89,13 @@ function propagateQuery(path) {
 			return previous.then(function (result) {
 				var collectionName = item[0];
 				var query = item[1];
+
 				var mongoQuery = util.parseQuery(query);
 
 				if (mongoQuery === null) {
 					reject("bad request");
 				}
+
 				mongoQuery = _.extend(mongoQuery, result.fkQuery);
 
 				var promise = new Promise(function (resolve, reject) {
@@ -119,7 +120,8 @@ function propagateQuery(path) {
 								}
 							});
 						} else {
-
+							console.log('got into else');
+							debugger;
 							var resolveObj = {};
 							resolveObj["collection"] = collection;
 							resolveObj["mongoQuery"] = mongoQuery;
@@ -148,8 +150,65 @@ function propagateQuery(path) {
 	return promise;
 }
 
-function saveData(path, data) {
-	console.log('in save data');
+function updateData(path, data) {
+
+	var collectionName = path[0];
+
+	var promise = new Promise(function (resolve, reject) {
+
+		DBClient.connect(url).then(function (db) {
+			DBClient.setDB(db);
+			return DBClient.loadCollection(collectionName);
+		}).then(function (collection) {
+			console.log('loading collection');
+			debugger;
+			return updateDataHelper(collection);
+		}).then(function (response) {
+			debugger;
+			var modifiedCount = response.result.modifiedCount;
+
+			if (modifiedCount > 0) {
+
+				var responseData = { "code": 200, "body": "Updated " + modifiedCount + " documents" };
+			} else {
+
+				var responseData = { "code": 204, "body": "No documents updated :(" };
+			}
+			resolve(responseData);
+		}, function (err) {
+			var responseData = { "code": 500, "body": err.message };
+			console.log("response data is: " + responseData);
+			resolve(responseData);
+		});
+	});
+
+	return promise;
+
+	function updateDataHelper(collection) {
+
+		if (path.length > 1) {
+			var mongoQuery = util.parseQuery(path[1]);
+		}
+
+		if (path.length == 2) {
+			//TODO: need to take this out into its own function!!!
+
+			var promise = new Promise(function (resolve, reject) {
+				_collectionUtilJs2['default'].updateOne(collection, mongoQuery, data).then(function (result) {
+
+					resolve(result);
+				}, function (err) {
+					console.log(err);
+					reject(err);
+				});
+			});
+			return promise;
+		}
+	}
+}
+
+function saveData(path, data, update) {
+
 	var collectionName = path[0];
 
 	var promise = new Promise(function (resolve, reject) {
@@ -162,14 +221,12 @@ function saveData(path, data) {
 
 			return saveDataHelper(collection);
 		}).then(function (docs) {
-			debugger;
 
-			docs = docs.map(util.sanitizeId); // docs is an array of one doc
-
-			var responseData = { "code": 201, "body": docs.pop() };
-			console.log(responseData);
+			docs = util.sanitizeId(docs);
+			var responseData = { "code": 201, "body": docs };
 			resolve(responseData);
 		}, function (err) {
+
 			var responseData = { "code": 500, "body": err.message };
 			console.log("response data is: " + responseData);
 			resolve(responseData);
@@ -190,8 +247,7 @@ function saveData(path, data) {
 					if (err) {
 						reject(err);
 					} else {
-						debugger;
-						resolve(result.ops);
+						resolve(result.ops[0]);
 					}
 				});
 			});
@@ -223,7 +279,7 @@ function saveData(path, data) {
 					return _collectionUtilJs2['default'].insertOne(collectionToAddToObj, data);
 				}).then(function (result) {
 					debugger;
-					resolve(result.ops);
+					resolve(result.ops[0]);
 				}, function (err) {
 					reject(err);
 				});
@@ -312,7 +368,41 @@ var server = http.createServer(function (req, resp) {
 
 				break;
 
+			case "PUT":
+
+				req.on('data', function (chunk) {
+					data += chunk;
+				});
+
+				req.on('end', function () {
+					data = JSON.parse(data);
+					updateData(path, data).then(function (responseData) {
+
+						var respString = JSON.stringify(responseData.body);
+
+						resp.writeHead(responseData.code, {
+							'Content-Length': respString.length,
+							'Content-Type': 'application/json'
+						});
+
+						resp.write(respString);
+						resp.end();
+					}, function (err) {
+						resp.writeHead(err.code, {
+							'Content-Length': err.body.length,
+							'Content-Type': 'text/plain'
+						});
+						resp.write(err.body);
+						resp.end();
+					});
+				});
+
+				break;
+
 			case "POST":
+
+				// if post is /register
+				// save data //
 
 				req.on('data', function (chunk) {
 					data += chunk;
@@ -321,8 +411,7 @@ var server = http.createServer(function (req, resp) {
 				req.on('end', function () {
 					data = JSON.parse(data);
 					saveData(path, data).then(function (responseData) {
-						console.log("got response back from SaveData: ");
-						console.log(responseData);
+						debugger;
 
 						var respString = JSON.stringify(responseData.body);
 

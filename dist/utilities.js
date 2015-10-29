@@ -27,7 +27,6 @@ module.exports = {
 
 		var queryWords = query.split('_');
 
-		debugger;
 		var fieldName = queryWords[0];
 		var lastWord = queryWords[queryWords.length - 1];
 
