@@ -164,7 +164,7 @@ function updateData(path, data) {
 			debugger;
 			return updateDataHelper(collection);
 		}).then(function (response) {
-			debugger;
+
 			var modifiedCount = response.result.modifiedCount;
 
 			if (modifiedCount > 0) {
@@ -185,6 +185,8 @@ function updateData(path, data) {
 	return promise;
 
 	function updateDataHelper(collection) {
+		// remove id field from obj
+		data = delete data["id"];
 
 		if (path.length > 1) {
 			var mongoQuery = util.parseQuery(path[1]);
@@ -194,6 +196,7 @@ function updateData(path, data) {
 			//TODO: need to take this out into its own function!!!
 
 			var promise = new Promise(function (resolve, reject) {
+
 				_collectionUtilJs2['default'].updateOne(collection, mongoQuery, data).then(function (result) {
 
 					resolve(result);

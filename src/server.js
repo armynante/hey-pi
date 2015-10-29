@@ -173,7 +173,7 @@ function updateData(path, data) {
 			})
 
 			.then((response) => {
-				debugger;
+
 				var modifiedCount = response.result.modifiedCount;
 
 				if (modifiedCount > 0) {
@@ -198,7 +198,9 @@ function updateData(path, data) {
 
 
 	function updateDataHelper(collection){
-
+		// remove id field from obj
+		data = delete data["id"];
+		
 		if (path.length > 1) {
 			var mongoQuery = util.parseQuery(path[1]);
 		}
@@ -208,6 +210,7 @@ function updateData(path, data) {
 
 			var promise = new Promise(
 				(resolve, reject) => {
+
 					colUtil.updateOne(collection, mongoQuery, data)
 					.then((result) => {
 
