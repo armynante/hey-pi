@@ -199,8 +199,8 @@ function updateData(path, data) {
 
 	function updateDataHelper(collection){
 		// remove id field from obj
-		data = delete data["id"];
-		
+		delete data["id"];
+
 		if (path.length > 1) {
 			var mongoQuery = util.parseQuery(path[1]);
 		}
