@@ -24,12 +24,15 @@ module.exports = {
 
 		var queryWords = query.split('_');
 
+		debugger;
 		var fieldName = queryWords[0];
 		var lastWord  = queryWords[queryWords.length-1]
 
 		lastWord = lastWord.match(/^(\d)*$/) === null ? lastWord : parseInt(lastWord);
 		lastWord = lastWord.match(/^(true)$/) === null ? lastWord : true;
 		lastWord = lastWord.match(/^(false)$/) === null ? lastWord : false;
+
+
 
 		var mongoQuery ={};
 		var now = new Date().toISOString();
@@ -65,18 +68,17 @@ module.exports = {
 		var clean = function(doc){
 			var id = doc._id;
 			delete doc["_id"];
+			debugger;
 			doc["id"] = id.toString();
 			return doc;
 		};
-		if ( docs.length > 0) {
 
-			if (docs.toString() !== '[object Object]'){
-				return clean(docs);
-			} else {
-				return docs.map(clean);
-			}
-	  } else {
-			return docs;
+		if (docs.toString().split(",")[0] !== '[object Object]'){
+			debugger;
+			return clean(docs);
+		} else {
+			debugger;
+			return docs.map(clean);
 		}
 	}
 }

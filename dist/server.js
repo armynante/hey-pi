@@ -32,8 +32,9 @@ function getData(path) {
 
 			collection.find(mongoQuery).toArray(function (err, docs) {
 
-				console.log(err);
-				docs = util.sanitizeId(docs);
+				if (docs !== undefined && docs !== null && docs.length > 0) {
+					docs = util.sanitizeId(docs);
+				}
 
 				if (err) reject({ "code": 500, "body": err });
 
@@ -53,7 +54,7 @@ function delData(path) {
 	var promise = new Promise(function (resolve, reject) {
 
 		propagateQuery(path).then(function (resolveObj) {
-			debugger;
+
 			var collection = resolveObj.collection;
 			var mongoQuery = resolveObj.mongoQuery;
 
@@ -118,8 +119,7 @@ function propagateQuery(path) {
 								}
 							});
 						} else {
-							console.log('got into else');
-							debugger;
+
 							var resolveObj = {};
 							resolveObj["collection"] = collection;
 							resolveObj["mongoQuery"] = mongoQuery;
@@ -162,7 +162,7 @@ function saveData(path, data) {
 
 			return saveDataHelper(collection);
 		}).then(function (docs) {
-			debugger;
+
 			docs = util.sanitizeId(docs);
 			var responseData = { "code": 201, "body": docs };
 			resolve(responseData);
@@ -317,7 +317,6 @@ var server = http.createServer(function (req, resp) {
 				req.on('end', function () {
 					data = JSON.parse(data);
 					saveData(path, data).then(function (responseData) {
-						debugger;
 
 						var respString = JSON.stringify(responseData.body);
 
@@ -342,7 +341,7 @@ var server = http.createServer(function (req, resp) {
 			case "DELETE":
 
 				delData(path).then(function (responseData) {
-					debugger;
+
 					var respString = JSON.stringify(responseData.body);
 
 					resp.writeHead(responseData.code, {

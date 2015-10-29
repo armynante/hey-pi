@@ -25,6 +25,7 @@ module.exports = {
 
 		var queryWords = query.split('_');
 
+		debugger;
 		var fieldName = queryWords[0];
 		var lastWord = queryWords[queryWords.length - 1];
 
@@ -60,18 +61,17 @@ module.exports = {
 		var clean = function clean(doc) {
 			var id = doc._id;
 			delete doc["_id"];
+			debugger;
 			doc["id"] = id.toString();
 			return doc;
 		};
-		if (docs.length > 0) {
 
-			if (docs.toString() !== '[object Object]') {
-				return clean(docs);
-			} else {
-				return docs.map(clean);
-			}
+		if (docs.toString().split(",")[0] !== '[object Object]') {
+			debugger;
+			return clean(docs);
 		} else {
-			return docs;
+			debugger;
+			return docs.map(clean);
 		}
 	}
 };
