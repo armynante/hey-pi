@@ -1,4 +1,5 @@
 var ObjectID = require("mongodb").ObjectID;
+import bcrypt from 'bcrypt';
 
 var utilities = {
 	getFieldNames: function(collection) {
@@ -27,7 +28,6 @@ var utilities = {
 		var queryWords = query.split('_');
 
 		console.log(queryWords)
-		debugger;
 
 		var fieldName = queryWords[0];
 		var lastWord = queryWords[queryWords.length - 1]
@@ -82,6 +82,20 @@ var utilities = {
 		delete doc["_id"];
 		doc["id"] = id.toString();
 		return doc;
+	},
+
+	generateHash: function(password) {
+		var promise = new Promise(
+			(resolve, reject) => {
+
+			bcrypt.genSalt(10, function(err, salt) {
+	      bcrypt.hash(password, salt, function(err, hash) {
+	            if (err) reject(err);
+							resolve(hash);
+	      });
+	    })
+		});
+		return promise;
 	}
 }
 

@@ -12,15 +12,17 @@
  		this.db = null;
  	}
 
- 	dbConnect(url) {
+ 	_dbConnect(url) {
     var _this = this;
  		Mongo.connect(url, function(err, db) {
       if (err) throw err;
+      db.collection('users').ensureIndex( { "email": 1 }, { unique: true } );
       _this.db = db
  		});
  	}
 
- 	_loadCollection(name) {
+
+  _loadCollection(name) {
  		var promise = new Promise(
  			(resolve, reject) => {
  				this.db.collection(name, (err, collection) => {
@@ -34,8 +36,23 @@
  		return promise;
  	}
 
+  _save(name,obj) {
+    var promise = new Promise(
+      (reject, resolve) => {
+        this.db.collection(name).insertOne(obj,{unique:true}, (resp) => {
+          //check for duplicate entry
+          resp.code === 11000 ? reject(resp) : resolve(resp);
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+      }
+    );
+    return promise;
+  }
+
+
  	_getData(path) {
-    debugger;
  		var promise = new Promise((resolve, reject) => {
 
  			this._propagateQuery(path).then((resolveObj) => {
@@ -103,7 +120,6 @@
  	}
 
  	_propagateQuery(path) {
-    debugger;
  		var pathArray = [];
  		if (path.length % 2 === 1) path.push("");
 
@@ -202,7 +218,6 @@
 
  				.then((collection) => {
  					console.log('loading collection');
- 					debugger;
  					return updateDataHelper(collection);
  				})
 
@@ -370,7 +385,6 @@
  						})
 
  						.then((result) => {
- 							debugger;
  							resolve(result.ops[0]);
  						}, (err) => {
  							reject(err);

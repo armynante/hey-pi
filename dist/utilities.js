@@ -3,6 +3,13 @@
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+var _bcrypt = require('bcrypt');
+
+var _bcrypt2 = _interopRequireDefault(_bcrypt);
+
 var ObjectID = require("mongodb").ObjectID;
 
 var utilities = {
@@ -31,7 +38,6 @@ var utilities = {
 		var queryWords = query.split('_');
 
 		console.log(queryWords);
-		debugger;
 
 		var fieldName = queryWords[0];
 		var lastWord = queryWords[queryWords.length - 1];
@@ -85,6 +91,19 @@ var utilities = {
 		delete doc["_id"];
 		doc["id"] = id.toString();
 		return doc;
+	},
+
+	generateHash: function generateHash(password) {
+		var promise = new Promise(function (resolve, reject) {
+
+			_bcrypt2["default"].genSalt(10, function (err, salt) {
+				_bcrypt2["default"].hash(password, salt, function (err, hash) {
+					if (err) reject(err);
+					resolve(hash);
+				});
+			});
+		});
+		return promise;
 	}
 };
 
