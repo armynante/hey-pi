@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/armynante/hey-pi#readme",
   "dependencies": {
+    "express": "^4.13.3",
     "mongodb": "^2.0.46",
     "shelljs": "^0.5.3",
     "underscore": "^1.8.3"

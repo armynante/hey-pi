@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-var colUtil = {
+var collectionUtil = {
 	findOne: function findOne(collection, query) {
 		var promise = new Promise(function (resolve, reject) {
 			collection.find(query, function (err, docs) {
@@ -21,39 +21,6 @@ var colUtil = {
 		});
 		return promise;
 	},
-	//
-	// findMany: function(collection, query){
-	// 	var promise = new Promise(
-	// 		(resolve, reject) => {
-	// 			debugger;
-	// 			collection.find(query, (err, docs) => {
-	// 				debugger;
-	// 				if (err) console.log(err);
-	//
-	// 				// docs.toArray((err, docArray) => {
-	// 				// 	//debugger;
-	// 				// 	if (!docArray.length){
-	// 				// 		reject("No documents found\n");
-	// 				// 	}
-	// 				// 	else{
-	// 				// 		resolve(docArray);
-	// 				// 	}
-	// 				// });
-	//
-	// 				docs.toArray()
-	// 				.then((docArray) => {
-	// 					debugger;
-	// 					console.log(docArray);
-	// 					resolve(docArray);
-	// 				}, (err) => {
-	// 					debugger;
-	// 					reject(err);
-	// 					console.log(err)
-	// 				});
-	// 			}
-	// 		})
-	// 	return promise;
-	// },
 
 	insertOne: function insertOne(collection, data) {
 		var promise = new Promise(function (resolve, reject) {
@@ -83,6 +50,6 @@ var colUtil = {
 	}
 };
 
-exports["default"] = colUtil;
+exports["default"] = collectionUtil;
 module.exports = exports["default"];
 //# sourceMappingURL=collectionUtil.js.map

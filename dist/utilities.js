@@ -1,8 +1,11 @@
 "use strict";
 
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
 var ObjectID = require("mongodb").ObjectID;
 
-module.exports = {
+var utilities = {
 	getFieldNames: function getFieldNames(collection) {
 		return Object.keys(collection);
 	},
@@ -45,15 +48,25 @@ module.exports = {
 		var now = new Date().toISOString();
 
 		if (query.match(/greater_than/)) {
-			mongoQuery[fieldName] = { $gt: parseInt(lastWord) };
+			mongoQuery[fieldName] = {
+				$gt: parseInt(lastWord)
+			};
 		} else if (query.match(/less_than/)) {
-			mongoQuery[fieldName] = { $lt: parseInt(lastWord) };
+			mongoQuery[fieldName] = {
+				$lt: parseInt(lastWord)
+			};
 		} else if (query.match(/is_not/)) {
-			mongoQuery[fieldName] = { $ne: lastWord };
+			mongoQuery[fieldName] = {
+				$ne: lastWord
+			};
 		} else if (query.match(/is_in_future/)) {
-			mongoQuery[fieldName] = { $gt: now };
+			mongoQuery[fieldName] = {
+				$gt: now
+			};
 		} else if (query.match(/is_in_past/)) {
-			mongoQuery[fieldName] = { $lt: now };
+			mongoQuery[fieldName] = {
+				$lt: now
+			};
 		} else if (query.match(/is/)) {
 			mongoQuery[fieldName] = lastWord;
 		} else if (query.match(/^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/i)) {
@@ -74,4 +87,7 @@ module.exports = {
 		return doc;
 	}
 };
+
+exports["default"] = utilities;
+module.exports = exports["default"];
 //# sourceMappingURL=utilities.js.map
