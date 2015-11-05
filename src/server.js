@@ -1,14 +1,13 @@
 "use strict";
 
 import { MongoClient } from './MongoClient.js';
-import { UserModel } from './User.js';
-
 import collectionUtil from './collectionUtil.js';
 import utilities from './utilities.js';
 import express from 'express';
-import jwt from 'json-web-token';
+import jwt from 'jsonwebtoken';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
+import bcrypt from 'bcrypt';
 
 const url = 'mongodb://localhost:27017/hey-pi';
 const secret = 'SUPERCEREALGUYS';
@@ -32,36 +31,90 @@ var urlStrip = function(req, res, next) {
 	next();
 };
 
-// var checkAuth = function(req, res, next) {
-//
-// }
+var checkAuth = function(req, res, next) {
+	console.log("in check auth");
+	var token = req.body.token || req.query.token || req.headers['x-access-token'];
+	if (token) {
+		jwt.verify(token, secret, (err,valid) => {
+			if (err) {
+				res.json({ success: false, message: 'Failed to authenticate token.' });
+			} else {
+				req.authorized = valid;
+			}
+		});
+	} else {
+		res.json({ success: false, message: 'Failed to provide authentication token.' });
+	}
+	next();
+}
 
 app.route('/register/:email/:pass')
 
 .post((req,res) => {
-	var email = req.params.email;
-	var pass = req.params.pass;
-	var User = new UserModel();
+	var user = { email: req.params.email, pass: req.params.pass};
 
-	User.create({email: email, pass: pass }).then((userObj) => {
-		return Mongo._save('users',userObj);
+	// save the user
+	utilities.generateHash(user.pass).then((hash) => {
+		user.pass = hash;
+		return Mongo._save('users',user);
 	})
-	.then((user) => {
-		res.json(user);
+	.then((savedUser) => {
+		//if the user is created assign a token
+		var token = jwt.sign(savedUser, secret, {
+			expiresInMinutes: 1440 //24r
+		});
+
+		// remover clear text pass
+		delete savedUser['pass'];
+		savedUser['token'] = token;
+		res.json(savedUser);
 	})
 	.catch((err) => {
-		res.json({message: "user looks like it already exists"});
+		res.json(err);
 	})
 });
 
 app.route('/authorize')
 
-.get((req,res) => {
+.post((req,res) => {
+	var email = req.body.email || req.query.email;
+	var pass = req.body.pass || req.query.pass;
 
-})
+	var user = { "email": email, "pass": pass};
+	//find user and test pass
+	Mongo._getData(['users','email_is_' + email]).then((resp) => {
+		//if we get a match
+		if (resp.body.length) {
+			var user = resp.body[0];
+			//test the password
+			bcrypt.compare(pass, user.pass, (err,valid) => {
+
+				if(valid) {
+					var token = jwt.sign(user, secret, {
+						expiresInMinutes: 1440 //24r
+					});
+
+					user['token'] = token;
+					delete user['pass'];
+					user['authorized'] = true;
+					res.json(user);
+
+				} else {
+					res.json({success: false, message:"password incorrect"});
+				}
+
+			});
+		} else {
+			res.json({success: false, message:"no user found with that email"});
+		}
+	})
+	.catch((err) => {
+		debugger;
+	});
+});
 
 //Check authentication before proceeding to api
-// app.use(checkAuth);
+app.use(checkAuth);
 
 //strip path
 app.use(urlStrip);
@@ -69,8 +122,12 @@ app.use(urlStrip);
 //api routes
 app.route('/api/*')
 	.get((req, res) => {
+		console.log("getting here");
 		Mongo._getData(req.strip_path).then((data) => {
 			res.json(data);
+		})
+		.catch((err) => {
+			console.log(err);
 		});
 	});
 

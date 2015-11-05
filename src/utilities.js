@@ -84,17 +84,20 @@ var utilities = {
 		return doc;
 	},
 
-	generateHash: function(password) {
+	generateHash: function(pass) {
 		var promise = new Promise(
 			(resolve, reject) => {
-
-			bcrypt.genSalt(10, function(err, salt) {
-	      bcrypt.hash(password, salt, function(err, hash) {
-	            if (err) reject(err);
+				bcrypt.genSalt(10, function(err, salt) {
+		      bcrypt.hash(pass, salt, function(err, hash) {
+	          if (err) {
+							reject(err)
+						} else {
 							resolve(hash);
-	      });
-	    })
-		});
+						};
+		      });
+	    	})
+			}
+		);
 		return promise;
 	}
 }

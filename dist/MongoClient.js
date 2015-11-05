@@ -62,12 +62,14 @@ var MongoClient = (function (_Mongo) {
     value: function _save(name, obj) {
       var _this3 = this;
 
-      var promise = new Promise(function (reject, resolve) {
-        _this3.db.collection(name).insertOne(obj, { unique: true }, function (resp) {
+      var promise = new Promise(function (resolve, reject) {
+        _this3.db.collection(name).insertOne(obj, function (err, resp) {
           //check for duplicate entry
-          resp.code === 11000 ? reject(resp) : resolve(resp);
-        })['catch'](function (err) {
-          console.log(err);
+          if (err !== null) {
+            reject({ err: err, message: "looks like that email is already taken" });
+          } else {
+            resolve(resp.ops[0]);
+          }
         });
       });
       return promise;

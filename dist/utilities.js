@@ -93,13 +93,15 @@ var utilities = {
 		return doc;
 	},
 
-	generateHash: function generateHash(password) {
+	generateHash: function generateHash(pass) {
 		var promise = new Promise(function (resolve, reject) {
-
 			_bcrypt2["default"].genSalt(10, function (err, salt) {
-				_bcrypt2["default"].hash(password, salt, function (err, hash) {
-					if (err) reject(err);
-					resolve(hash);
+				_bcrypt2["default"].hash(pass, salt, function (err, hash) {
+					if (err) {
+						reject(err);
+					} else {
+						resolve(hash);
+					};
 				});
 			});
 		});

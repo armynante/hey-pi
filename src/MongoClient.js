@@ -38,19 +38,19 @@
 
   _save(name,obj) {
     var promise = new Promise(
-      (reject, resolve) => {
-        this.db.collection(name).insertOne(obj,{unique:true}, (resp) => {
+      (resolve, reject) => {
+        this.db.collection(name).insertOne(obj, (err,resp) => {
           //check for duplicate entry
-          resp.code === 11000 ? reject(resp) : resolve(resp);
-        })
-        .catch((err) => {
-          console.log(err);
-        })
+          if (err !== null ) {
+            reject({err: err, message: "looks like that email is already taken" })
+          } else {
+            resolve(resp.ops[0]);
+          }
+        });
       }
     );
     return promise;
   }
-
 
  	_getData(path) {
  		var promise = new Promise((resolve, reject) => {
