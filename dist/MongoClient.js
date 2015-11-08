@@ -22,8 +22,11 @@ var _collectionUtilJs = require('./collectionUtil.js');
 
 var _collectionUtilJs2 = _interopRequireDefault(_collectionUtilJs);
 
-var Mongo = require("mongodb").MongoClient;
-var _ = require("underscore");
+var _underscore = require("underscore");
+
+var _underscore2 = _interopRequireDefault(_underscore);
+
+var _mongodb = require("mongodb");
 
 var MongoClient = (function (_Mongo) {
   _inherits(MongoClient, _Mongo);
@@ -39,7 +42,7 @@ var MongoClient = (function (_Mongo) {
     key: '_dbConnect',
     value: function _dbConnect(url) {
       var _this = this;
-      Mongo.connect(url, function (err, db) {
+      _mongodb.MongoClient.connect(url, function (err, db) {
         if (err) throw err;
         db.collection('users').ensureIndex({ "email": 1 }, { unique: true });
         _this.db = db;
@@ -87,7 +90,6 @@ var MongoClient = (function (_Mongo) {
 
           collection.find(mongoQuery).toArray(function (err, docs) {
 
-            console.log(err);
             docs = docs;
 
             if (err) reject({
@@ -112,12 +114,13 @@ var MongoClient = (function (_Mongo) {
       return promise;
     }
   }, {
-    key: 'delData',
-    value: function delData(path) {
+    key: '_delData',
+    value: function _delData(path) {
+      var _this5 = this;
 
       var promise = new Promise(function (resolve, reject) {
 
-        propagateQuery(path).then(function (resolveObj) {
+        _this5._propagateQuery(path).then(function (resolveObj) {
           var collection = resolveObj.collection;
           var mongoQuery = resolveObj.mongoQuery;
 
@@ -147,7 +150,7 @@ var MongoClient = (function (_Mongo) {
   }, {
     key: '_propagateQuery',
     value: function _propagateQuery(path) {
-      var _this5 = this;
+      var _this6 = this;
 
       var pathArray = [];
       if (path.length % 2 === 1) path.push("");
@@ -171,10 +174,10 @@ var MongoClient = (function (_Mongo) {
               reject("bad request");
             }
 
-            mongoQuery = _.extend(mongoQuery, result.fkQuery);
+            mongoQuery = _underscore2['default'].extend(mongoQuery, result.fkQuery);
 
             var promise = new Promise(function (resolve, reject) {
-              _this5._loadCollection(collectionName).then(function (collection) {
+              _this6._loadCollection(collectionName).then(function (collection) {
                 if (index !== pathArray.length - 1) {
                   var cursor = collection.find(mongoQuery);
 
@@ -182,7 +185,7 @@ var MongoClient = (function (_Mongo) {
                     if (err) {
                       reject(err);
                     } else {
-                      var keys = _.pluck(docs, "_id");
+                      var keys = _underscore2['default'].pluck(docs, "_id");
 
                       for (var i = 0; i < keys.length; i++) {
                         keys[i] = keys[i].toString();
@@ -228,18 +231,15 @@ var MongoClient = (function (_Mongo) {
       return promise;
     }
   }, {
-    key: 'updateData',
-    value: function updateData(path, data) {
+    key: '_updateData',
+    value: function _updateData(path, data) {
+      var _this7 = this;
 
       var collectionName = path[0];
 
       var promise = new Promise(function (resolve, reject) {
 
-        DBClient.connect(url).then(function (db) {
-          DBClient.setDB(db);
-          return DBClient._loadCollection(collectionName);
-        }).then(function (collection) {
-          console.log('loading collection');
+        _this7._loadCollection(collectionName).then(function (collection) {
           return updateDataHelper(collection);
         }).then(function (response) {
 
@@ -259,13 +259,9 @@ var MongoClient = (function (_Mongo) {
             };
           }
           resolve(responseData);
-        }, function (err) {
-          var responseData = {
-            "code": 500,
-            "body": err.message
-          };
-          console.log("response data is: " + responseData);
-          resolve(responseData);
+        })['catch'](function (err) {
+          debugger;
+          reject(err);
         });
       });
 
@@ -273,46 +269,44 @@ var MongoClient = (function (_Mongo) {
 
       function updateDataHelper(collection) {
         // remove id field from obj
-        delete data["id"];
 
-        if (path.length > 1) {
-          var mongoQuery = _utilitiesJs2['default'].parseQuery(path[1]);
-        }
+        var promise = new Promise(function (resolve, reject) {
 
-        if (path.length == 2) {
-          //TODO: need to take this out into its own function!!!
+          delete data["id"];
 
-          var promise = new Promise(function (resolve, reject) {
+          if (path.length > 1) {
+            var mongoQuery = _utilitiesJs2['default'].parseQuery(path[1]);
+          }
 
+          if (path.length == 2) {
             _collectionUtilJs2['default'].updateOne(collection, mongoQuery, data).then(function (result) {
 
               resolve(result);
             }, function (err) {
-              console.log(err);
               reject(err);
             });
-          });
-          return promise;
-        }
+          } else {
+            debugger;
+            var responseData = {
+              "code": 400,
+              "body": "Cannot PUT data on collections."
+            };
+            reject(responseData);
+          }
+        });
+        return promise;
       }
     }
   }, {
-    key: 'saveData',
-    value: function saveData(path, data, update) {
-
+    key: '_saveData',
+    value: function _saveData(path, data) {
+      var _this = this;
       var collectionName = path[0];
 
       var promise = new Promise(function (resolve, reject) {
-
-        DBClient.connect(url).then(function (db) {
-          DBClient.setDB(db);
-          return DBClient._loadCollection(collectionName);
-        }).then(function (collection) {
-          console.log('loading collection');
-
+        _this._loadCollection(collectionName).then(function (collection) {
           return saveDataHelper(collection);
         }).then(function (docs) {
-
           docs = _utilitiesJs2['default'].sanitizeId(docs);
           var responseData = {
             "code": 201,
@@ -333,7 +327,7 @@ var MongoClient = (function (_Mongo) {
       return promise;
 
       function saveDataHelper(collection) {
-
+        debugger;
         if (path.length > 1) {
           var mongoQuery = _utilitiesJs2['default'].parseQuery(path[1]);
         }
@@ -367,12 +361,12 @@ var MongoClient = (function (_Mongo) {
           var promise = new Promise(function (resolve, reject) {
             _collectionUtilJs2['default'].findOne(collection, mongoQuery).then(function (doc) {
               parentID = doc._id.toString();
-              return DBClient._loadCollection(collectionToAddTo);
+              return _this._loadCollection(collectionToAddTo);
             }).then(function (collectionToAddToObj) {
               var obj = {};
               var keyName = collectionName + "id";
               obj[keyName] = parentID;
-              data = _.extend(data, obj);
+              data = _underscore2['default'].extend(data, obj);
               return _collectionUtilJs2['default'].insertOne(collectionToAddToObj, data);
             }).then(function (result) {
               resolve(result.ops[0]);
@@ -387,7 +381,7 @@ var MongoClient = (function (_Mongo) {
   }]);
 
   return MongoClient;
-})(Mongo);
+})(_mongodb.MongoClient);
 
 exports.MongoClient = MongoClient;
 ;

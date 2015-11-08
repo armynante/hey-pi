@@ -2,8 +2,8 @@
 
  import utilities from './utilities.js';
  import collectionUtil from './collectionUtil.js';
- var Mongo = require("mongodb").MongoClient;
- var _ = require("underscore");
+ import _ from "underscore";
+ import { MongoClient as Mongo } from "mongodb";
 
  export class MongoClient extends Mongo {
 
@@ -20,7 +20,6 @@
       _this.db = db
  		});
  	}
-
 
   _loadCollection(name) {
  		var promise = new Promise(
@@ -61,7 +60,6 @@
 
  				collection.find(mongoQuery).toArray((err, docs) => {
 
- 					console.log(err)
  					docs = (docs);
 
  					if (err) reject({
@@ -87,11 +85,11 @@
  		return promise;
  	}
 
- 	delData(path) {
+ 	_delData(path) {
 
  		var promise = new Promise((resolve, reject) => {
 
- 			propagateQuery(path).then((resolveObj) => {
+ 			this._propagateQuery(path).then((resolveObj) => {
  				var collection = resolveObj.collection;
  				var mongoQuery = resolveObj.mongoQuery;
 
@@ -203,21 +201,16 @@
  		return promise;
  	}
 
- 	updateData(path, data) {
+ 	_updateData(path, data) {
 
  		var collectionName = path[0];
 
  		var promise = new Promise(
  			(resolve, reject) => {
 
- 				DBClient.connect(url)
- 					.then((db) => {
- 						DBClient.setDB(db);
- 						return DBClient._loadCollection(collectionName);
- 					})
+ 				this._loadCollection(collectionName)
 
  				.then((collection) => {
- 					console.log('loading collection');
  					return updateDataHelper(collection);
  				})
 
@@ -241,14 +234,11 @@
  						};
  					}
  					resolve(responseData);
- 				}, (err) => {
- 					var responseData = {
- 						"code": 500,
- 						"body": err.message
- 					};
- 					console.log("response data is: " + responseData)
- 					resolve(responseData);
- 				});
+ 				})
+        .catch((err) => {
+          debugger;
+          reject(err);
+        });
  			}
  		);
 
@@ -257,56 +247,50 @@
 
  		function updateDataHelper(collection) {
  			// remove id field from obj
- 			delete data["id"];
 
- 			if (path.length > 1) {
- 				var mongoQuery = utilities.parseQuery(path[1]);
- 			}
+  		var promise = new Promise(
+  		    (resolve, reject) => {
 
- 			if (path.length == 2) {
- 				//TODO: need to take this out into its own function!!!
+          delete data["id"];
 
- 				var promise = new Promise(
- 					(resolve, reject) => {
+     			if (path.length > 1) {
+     				var mongoQuery = utilities.parseQuery(path[1]);
+     			}
 
- 						collectionUtil.updateOne(collection, mongoQuery, data)
- 							.then((result) => {
+     			if (path.length == 2) {
+  					collectionUtil.updateOne(collection, mongoQuery, data)
+  						.then((result) => {
 
- 								resolve(result)
-
- 							}, (err) => {
- 								console.log(err);
- 								reject(err);
- 							})
- 					}
- 				);
- 				return promise;
- 			}
- 		}
-
+  							resolve(result)
+  						}, (err) => {
+  							reject(err);
+  						})
+     			} else {
+            debugger
+            var responseData = {
+              "code": 400,
+              "body": "Cannot PUT data on collections."
+            };
+            reject(responseData)
+          }
+ 		    }
+      );
+ 		 return promise;
+    }
  	}
 
- 	saveData(path, data, update) {
-
+ 	_saveData(path, data) {
+    var _this = this;
  		var collectionName = path[0];
 
  		var promise = new Promise(
  			(resolve, reject) => {
-
- 				DBClient.connect(url)
- 					.then((db) => {
- 						DBClient.setDB(db);
- 						return DBClient._loadCollection(collectionName);
- 					})
-
- 				.then((collection) => {
- 					console.log('loading collection');
-
+ 			_this._loadCollection(collectionName)
+      .then((collection) => {
  					return saveDataHelper(collection);
- 				})
+ 			})
 
- 				.then((docs) => {
-
+ 			.then((docs) => {
  					docs = utilities.sanitizeId(docs);
  					var responseData = {
  						"code": 201,
@@ -330,7 +314,7 @@
 
 
  		function saveDataHelper(collection) {
-
+      debugger;
  			if (path.length > 1) {
  				var mongoQuery = utilities.parseQuery(path[1]);
  			}
@@ -373,7 +357,7 @@
 
  						.then((doc) => {
  							parentID = doc._id.toString();
- 							return DBClient._loadCollection(collectionToAddTo);
+ 							return _this._loadCollection(collectionToAddTo);
  						})
 
  						.then((collectionToAddToObj) => {
