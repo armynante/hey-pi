@@ -48,8 +48,8 @@ router.post('/', function (req, res) {
 	//find user and test pass
 	_serverJs2['default']._getData(['users', 'email_is_' + email]).then(function (resp) {
 		//if we get a match
-		if (resp.body.length) {
-			var user = resp.body[0];
+		if (resp.message.length) {
+			var user = resp.message[0];
 			//test the password
 			_bcrypt2['default'].compare(pass, user.pass, function (err, valid) {
 

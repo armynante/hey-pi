@@ -12,13 +12,9 @@ var _configJs = require('./config.js');
 
 var _configJs2 = _interopRequireDefault(_configJs);
 
-var _bcrypt = require('bcrypt');
+var _jsonwebtoken = require('jsonwebtoken');
 
-var _bcrypt2 = _interopRequireDefault(_bcrypt);
-
-var _collectionUtilJs = require('./collectionUtil.js');
-
-var _collectionUtilJs2 = _interopRequireDefault(_collectionUtilJs);
+var _jsonwebtoken2 = _interopRequireDefault(_jsonwebtoken);
 
 var _utilitiesJs = require('./utilities.js');
 
@@ -27,10 +23,6 @@ var _utilitiesJs2 = _interopRequireDefault(_utilitiesJs);
 var _express = require('express');
 
 var _express2 = _interopRequireDefault(_express);
-
-var _jsonwebtoken = require('jsonwebtoken');
-
-var _jsonwebtoken2 = _interopRequireDefault(_jsonwebtoken);
 
 var _bodyParser = require('body-parser');
 
@@ -68,13 +60,7 @@ app.use((0, _morgan2['default'])('dev')); //logging
 app.use(_bodyParser2['default'].urlencoded({ extended: false }));
 app.use(_bodyParser2['default'].json());
 
-//middleware
-var urlStrip = function urlStrip(req, res, next) {
-	var path = _utilitiesJs2['default'].stripPath(req.url);
-	req.strip_path = path;
-	next();
-};
-
+//middlewares
 var checkAuth = function checkAuth(req, res, next) {
 	var token = req.body.token || req.query.token || req.headers['x-access-token'];
 	if (token) {
@@ -82,16 +68,24 @@ var checkAuth = function checkAuth(req, res, next) {
 			if (err) {
 				res.status(401).json({ success: false, message: 'Failed to authenticate token.' });
 			} else {
-				req.authorized = valid;
+				//if valid token add user_id to req
+				req.user = valid._id;
+				next();
 			}
 		});
 	} else {
 		res.status(401).json({ success: false, message: 'Failed to provide authentication token.' });
 	}
+};
+
+var urlStrip = function urlStrip(req, res, next) {
+	var path = _utilitiesJs2['default'].stripPath(req.url);
+	req.strip_path = path;
 	next();
 };
 
 //pre-auth routes
+app.get('/');
 app.use('/register', _routesRegisterJs2['default']);
 app.use('/authorize', _routesAuthJs2['default']);
 
@@ -103,6 +97,10 @@ app.use(urlStrip);
 
 //api routes
 app.use('/api', _routesApiJs2['default']);
+
+app.get('*', function (req, res) {
+	res.send('can\'t find that!', 404);
+});
 
 var server = app.listen(_configJs2['default'].port, function () {
 	var host = server.address().address;

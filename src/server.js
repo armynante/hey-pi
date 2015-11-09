@@ -2,11 +2,10 @@
 
 import { MongoClient } from './MongoClient.js';
 import config from './config.js';
-import bcrypt from 'bcrypt';
-import collectionUtil from './collectionUtil.js';
+import jwt from 'jsonwebtoken';
 import utilities from './utilities.js';
 import express from 'express';
-import jwt from 'jsonwebtoken';
+
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
 
@@ -28,13 +27,7 @@ app.use(morgan('dev')); //logging
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-//middleware
-var urlStrip = function(req, res, next) {
-	var path = utilities.stripPath(req.url);
-	req.strip_path = path;
-	next();
-};
-
+//middlewares
 var checkAuth = function(req, res, next) {
 	var token = req.body.token || req.query.token || req.headers['x-access-token'];
 	if (token) {
@@ -42,16 +35,24 @@ var checkAuth = function(req, res, next) {
 			if (err) {
 				res.status(401).json({ success: false, message: 'Failed to authenticate token.' });
 			} else {
-				req.authorized = valid;
+				//if valid token add user_id to req
+				req.user = valid._id;
+				next();
 			}
 		});
 	} else {
 		res.status(401).json({ success: false, message: 'Failed to provide authentication token.' });
 	}
-	next();
 }
 
+var urlStrip = function(req, res, next) {
+	var path = utilities.stripPath(req.url);
+	req.strip_path = path;
+	next();
+};
+
 //pre-auth routes
+app.get('/')
 app.use('/register', register)
 app.use('/authorize', auth);
 
@@ -64,7 +65,9 @@ app.use(urlStrip);
 //api routes
 app.use('/api', api);
 
-
+app.get('*', function(req, res){
+  res.send('can\'t find that!', 404);
+});
 
 
 var server = app.listen(config.port, function() {

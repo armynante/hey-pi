@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 var collectionUtil = {
 	findOne: function findOne(collection, query) {
 		var promise = new Promise(function (resolve, reject) {
-			collection.find(query, function (err, docs) {
+			collection.find(query, { heypi_id: 0 }, function (err, docs) {
 				docs.toArray(function (err, docArray) {
 
 					if (docArray.length > 1) {
@@ -24,7 +24,7 @@ var collectionUtil = {
 
 	insertOne: function insertOne(collection, data) {
 		var promise = new Promise(function (resolve, reject) {
-			collection.insertOne(data, function (err, result) {
+			collection.insertOne(data, { heypi_id: 0 }, function (err, result) {
 				if (err) {
 					reject(err);
 				} else {
@@ -38,7 +38,7 @@ var collectionUtil = {
 	updateOne: function updateOne(collection, query, data) {
 
 		var promise = new Promise(function (resolve, reject) {
-			collection.updateOne(query, { $set: data }, function (err, result) {
+			collection.updateOne(query, { $set: data }, { heypi_id: 0 }, function (err, result) {
 				if (err) {
 					reject({ "message": " Error updating doc: " + err });
 				} else {

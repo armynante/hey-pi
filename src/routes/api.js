@@ -7,9 +7,9 @@ var router = express.Router();
 
 
 router.get('/*', (req, res) => {
-		if(req.strip_path[0].length > 1) {
-	 		Mongo._getData(req.strip_path).then((resp) => {
-				res.status(resp.code).json(resp.body);
+		if(req.strip_path[0] !== undefined) {
+	 		Mongo._getData(req.strip_path, req.user).then((resp) => {
+				res.status(resp.code).json(resp.message);
 			})
 			.catch((err) => {
 				res.json("error querying path " + req.strip_path);
@@ -20,26 +20,29 @@ router.get('/*', (req, res) => {
 	})
 
 router.post('/*', (req,res) => {
-		Mongo._saveData(req.strip_path, req.body).then((resp) => {
-			res.status(resp.code).json(resp.body);
+		Mongo._saveData(req.strip_path, req.body, req.user).then((resp) => {
+			res.status(resp.code).json(resp.message);
 		})
 		.catch((err) => {
 			res.status(err.code).json("error saving data");
 		});
+    req.user.documents++;
+    Mongo._update('users',{'_id':user._id}, req.user);
 	})
 
 router.put('/*', (req,res) => {
-		Mongo._updateData(req.strip_path, req.body).then((resp) => {
-			res.status(resp.code).json(resp.body);
+		Mongo._updateData(req.strip_path, req.body, req.user).then((resp) => {
+			res.status(resp.code).json(resp.message);
 		})
 		.catch((err) => {
-			res.status(err.code).json(err.body);
+      console.log(err);
+			res.status(500).json(err.message);
 		});
 	})
 
 router.delete('/*', (req,res) => {
-		Mongo._delData(req.strip_path).then((resp) => {
-			res.status(resp.code).json(resp.body);
+		Mongo._delData(req.strip_path, req.user).then((resp) => {
+			res.status(resp.code).json(resp.message);
 		})
 		.catch((err) => {
 			res.status(err.code).json("error updating data");

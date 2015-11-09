@@ -69,8 +69,28 @@ var MongoClient = (function (_Mongo) {
         _this3.db.collection(name).insertOne(obj, function (err, resp) {
           //check for duplicate entry
           if (err !== null) {
-            reject({ err: err, message: "looks like that email is already taken" });
+            reject({ code: 400, message: "looks like that email is already taken" });
           } else {
+            resolve(resp.ops[0]);
+          }
+        });
+      });
+      return promise;
+    }
+
+    //simple update for admin functions
+  }, {
+    key: '_update',
+    value: function _update(name, query, obj) {
+      var _this4 = this;
+
+      var promise = new Promise(function (resolve, reject) {
+        _this4.db.collection(name).update(query, obj, function (err, resp) {
+          //check for duplicate entry
+          if (err !== null) {
+            reject({ code: 400, message: err });
+          } else {
+            console.log(resp);
             resolve(resp.ops[0]);
           }
         });
@@ -79,43 +99,7 @@ var MongoClient = (function (_Mongo) {
     }
   }, {
     key: '_getData',
-    value: function _getData(path) {
-      var _this4 = this;
-
-      var promise = new Promise(function (resolve, reject) {
-
-        _this4._propagateQuery(path).then(function (resolveObj) {
-          var collection = resolveObj.collection;
-          var mongoQuery = resolveObj.mongoQuery;
-
-          collection.find(mongoQuery).toArray(function (err, docs) {
-
-            docs = docs;
-
-            if (err) reject({
-              "code": 500,
-              "body": err
-            });
-
-            var responseData = {
-              "code": 200,
-              "body": docs
-            };
-            resolve(responseData);
-          });
-        }, function (err) {
-          var responseData = {
-            "code": 500,
-            "body": err
-          };
-          reject(responseData);
-        });
-      });
-      return promise;
-    }
-  }, {
-    key: '_delData',
-    value: function _delData(path) {
+    value: function _getData(path, id) {
       var _this5 = this;
 
       var promise = new Promise(function (resolve, reject) {
@@ -124,23 +108,64 @@ var MongoClient = (function (_Mongo) {
           var collection = resolveObj.collection;
           var mongoQuery = resolveObj.mongoQuery;
 
-          collection.deleteMany(mongoQuery, function (err, result) {
+          //only load data created by the user
+          mongoQuery['heypi_id'] = id;
+
+          collection.find(mongoQuery, { heypi_id: 0 }).toArray(function (err, docs) {
+
+            docs = docs;
+
             if (err) reject({
               "code": 500,
-              "body": err
+              "message": err
             });
 
-            var numDocsDeleted = result.deletedCount;
             var responseData = {
               "code": 200,
-              "body": "Deleteted " + numDocsDeleted + " documents."
+              "message": docs
             };
             resolve(responseData);
           });
         }, function (err) {
           var responseData = {
             "code": 500,
-            "body": err
+            "message": err
+          };
+          reject(responseData);
+        });
+      });
+      return promise;
+    }
+  }, {
+    key: '_delData',
+    value: function _delData(path, id) {
+      var _this6 = this;
+
+      var promise = new Promise(function (resolve, reject) {
+
+        _this6._propagateQuery(path, id).then(function (resolveObj) {
+          var collection = resolveObj.collection;
+          var mongoQuery = resolveObj.mongoQuery;
+          mongoQuery['heypi_id'] = id;
+          console.log(mongoQuery);
+          collection.deleteMany(mongoQuery, function (err, result) {
+
+            if (err) reject({
+              "code": 500,
+              "message": err
+            });
+
+            var numDocsDeleted = result.deletedCount;
+            var responseData = {
+              "code": 200,
+              "message": "Deleteted " + numDocsDeleted + " documents."
+            };
+            resolve(responseData);
+          });
+        }, function (err) {
+          var responseData = {
+            "code": 500,
+            "message": err
           };
           reject(responseData);
         });
@@ -149,15 +174,12 @@ var MongoClient = (function (_Mongo) {
     }
   }, {
     key: '_propagateQuery',
-    value: function _propagateQuery(path) {
-      var _this6 = this;
+    value: function _propagateQuery(path, id) {
+      var _this7 = this;
 
       var pathArray = [];
       if (path.length % 2 === 1) path.push("");
-
-      // load client
       var promise = new Promise(function (resolve, reject) {
-
         for (var i = 0; i < path.length; i += 2) {
           pathArray.push([path[i], path[i + 1]]);
         }
@@ -174,10 +196,13 @@ var MongoClient = (function (_Mongo) {
               reject("bad request");
             }
 
+            //push id into query
+            mongoQuery['heypi_id'] = id;
+
             mongoQuery = _underscore2['default'].extend(mongoQuery, result.fkQuery);
 
             var promise = new Promise(function (resolve, reject) {
-              _this6._loadCollection(collectionName).then(function (collection) {
+              _this7._loadCollection(collectionName).then(function (collection) {
                 if (index !== pathArray.length - 1) {
                   var cursor = collection.find(mongoQuery);
 
@@ -232,15 +257,15 @@ var MongoClient = (function (_Mongo) {
     }
   }, {
     key: '_updateData',
-    value: function _updateData(path, data) {
-      var _this7 = this;
+    value: function _updateData(path, data, id) {
+      var _this8 = this;
 
       var collectionName = path[0];
 
       var promise = new Promise(function (resolve, reject) {
 
-        _this7._loadCollection(collectionName).then(function (collection) {
-          return updateDataHelper(collection);
+        _this8._loadCollection(collectionName).then(function (collection) {
+          return updateDataHelper(collection, id);
         }).then(function (response) {
 
           var modifiedCount = response.result.modifiedCount;
@@ -249,25 +274,24 @@ var MongoClient = (function (_Mongo) {
 
             var responseData = {
               "code": 200,
-              "body": "Updated " + modifiedCount + " documents"
+              "message": "Updated " + modifiedCount + " documents"
             };
           } else {
 
             var responseData = {
               "code": 204,
-              "body": "No documents updated :("
+              "message": "No documents updated :("
             };
           }
           resolve(responseData);
         })['catch'](function (err) {
-          debugger;
           reject(err);
         });
       });
 
       return promise;
 
-      function updateDataHelper(collection) {
+      function updateDataHelper(collection, id) {
         // remove id field from obj
 
         var promise = new Promise(function (resolve, reject) {
@@ -276,6 +300,7 @@ var MongoClient = (function (_Mongo) {
 
           if (path.length > 1) {
             var mongoQuery = _utilitiesJs2['default'].parseQuery(path[1]);
+            mongoQuery['heypi_id'] = id;
           }
 
           if (path.length == 2) {
@@ -286,10 +311,9 @@ var MongoClient = (function (_Mongo) {
               reject(err);
             });
           } else {
-            debugger;
             var responseData = {
               "code": 400,
-              "body": "Cannot PUT data on collections."
+              "message": "Cannot PUT data on collections."
             };
             reject(responseData);
           }
@@ -299,25 +323,25 @@ var MongoClient = (function (_Mongo) {
     }
   }, {
     key: '_saveData',
-    value: function _saveData(path, data) {
+    value: function _saveData(path, data, id) {
       var _this = this;
       var collectionName = path[0];
 
       var promise = new Promise(function (resolve, reject) {
         _this._loadCollection(collectionName).then(function (collection) {
-          return saveDataHelper(collection);
+          return saveDataHelper(collection, id);
         }).then(function (docs) {
           docs = _utilitiesJs2['default'].sanitizeId(docs);
           var responseData = {
             "code": 201,
-            "body": docs
+            "message": docs
           };
           resolve(responseData);
         }, function (err) {
 
           var responseData = {
             "code": 500,
-            "body": err.message
+            "message": err.message
           };
           console.log("response data is: " + responseData);
           resolve(responseData);
@@ -326,10 +350,15 @@ var MongoClient = (function (_Mongo) {
 
       return promise;
 
-      function saveDataHelper(collection) {
-        debugger;
+      function saveDataHelper(collection, id) {
+        console.log(data);
+        data['heypi_id'] = id;
+
         if (path.length > 1) {
           var mongoQuery = _utilitiesJs2['default'].parseQuery(path[1]);
+          if (mongoQuery !== null) {
+            mongoQuery['heypi_id'] = id;
+          }
         }
 
         if (path.length === 1) {
@@ -338,10 +367,13 @@ var MongoClient = (function (_Mongo) {
               if (err) {
                 reject(err);
               } else {
+                var data = result.ops[0];
+                delete data['heypi_id'];
                 resolve(result.ops[0]);
               }
             });
           });
+
           return promise;
         } else if (path.length == 2) {
           //TODO: need to take this out into its own function!!!
@@ -353,6 +385,7 @@ var MongoClient = (function (_Mongo) {
               reject(err);
             });
           });
+
           return promise;
         } else if (path.length === 3) {
           var collectionToAddTo = path[2];
@@ -384,5 +417,4 @@ var MongoClient = (function (_Mongo) {
 })(_mongodb.MongoClient);
 
 exports.MongoClient = MongoClient;
-;
 //# sourceMappingURL=MongoClient.js.map

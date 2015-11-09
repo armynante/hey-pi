@@ -4,7 +4,10 @@ var collectionUtil =  {
 	findOne: function(collection, query){
 		var promise = new Promise(
 			(resolve, reject) => {
-				collection.find(query, (err, docs) => {
+				collection.find(
+					query,
+					{heypi_id:0},
+					(err, docs) => {
 					docs.toArray((err, docArray) => {
 
 						if (docArray.length > 1){
@@ -26,7 +29,10 @@ var collectionUtil =  {
 	insertOne: function(collection, data) {
 		var promise = new Promise(
 			(resolve, reject) => {
-				collection.insertOne(data,function(err, result){
+				collection.insertOne(
+					data,
+					{heypi_id:0},
+					function(err, result){
 					if (err){
 			  	  		reject(err);
 			  	  	}
@@ -43,9 +49,11 @@ var collectionUtil =  {
 
 		var promise = new Promise (
 			(resolve, reject) => {
-					collection.updateOne(query,
-					{ $set: data },
-					(err, result) => {
+					collection.updateOne(
+						query,
+						{ $set: data },
+						{heypi_id:0},
+						(err, result) => {
 						if (err) {
 							reject({"message":" Error updating doc: "  + err});
 						} else {

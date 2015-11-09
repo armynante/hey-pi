@@ -32,35 +32,40 @@ var _bodyParser2 = _interopRequireDefault(_bodyParser);
 
 var router = _express2['default'].Router();
 
-var registerUser = function registerUser(user) {
-  // save the user
-  var promise = new Promise(function (resolve, reject) {
-    _utilitiesJs2['default'].generateHash(user.pass).then(function (hash) {
-      user.pass = hash;
-      return _serverJs2['default']._save('users', user);
-    }).then(function (savedUser) {
-      //if the user is created assign a token
-      var token = _jsonwebtoken2['default'].sign(savedUser, _configJs2['default'].secret, {
-        expiresInMinutes: 1440 //24r
-      });
-      // remover clear text pass
-      delete savedUser['pass'];
-      savedUser['token'] = token;
-      resolve({ code: 201, body: savedUser });
-    })['catch'](function (err) {
-      reject({ code: 500, body: err });
-    });
-  });
-  return promise;
-};
+// var registerUser = function(user) {
+// 	// save the user
+//   var promise = new Promise(
+//     (resolve, reject) => {
+//     	utilities.generateHash(user.pass).then((hash) => {
+//     		user.pass = hash;
+//     		return Mongo._save('users',user);
+//     	})
+//     	.then((savedUser) => {
+//     		//if the user is created assign a token
+//     		var token = jwt.sign(savedUser, config.secret, {
+//     			expiresInMinutes: 1440 //24r
+//     		});
+//     		// remover clear text pass
+//     		delete savedUser['pass'];
+//     		savedUser['token'] = token;
+//     		resolve({code: 201, message: savedUser});
+//       })
+//       .catch((err) => {
+//         reject({code:500, message: err});
+//       })
+//     }
+//   )
+//   return promise;
+// }
 
 router.post('/', function (req, res) {
-  var user = { email: req.body.email, pass: req.body.pass };
-  // save the user
-  registerUser(user).then(function (resp) {
-    res.status(resp.code).json(resp.body);
+  var user = new User(req.body.email);
+  user.setPassword(req.body.pass).then(function () {
+    return user.save();
+  }).then(function (resp) {
+    res.status(resp.code).json(resp.message);
   })['catch'](function (err) {
-    res.status(err.code).json(err.body.message);
+    res.status(err.code).json(err.message);
   });
 });
 
@@ -68,7 +73,7 @@ router.post('/:email/:pass', function (req, res) {
   var user = { email: req.params.email, pass: req.params.pass };
   // save the user
   registerUser(user).then(function (resp) {
-    res.status(resp.code).json(resp.body);
+    res.status(resp.code).json(resp.message);
   })['catch'](function (err) {
     res.status(err.code).json(err.body.message);
   });

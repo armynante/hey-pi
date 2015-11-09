@@ -27,11 +27,8 @@ var utilities = {
 
 		var queryWords = query.split('_');
 
-		console.log(queryWords)
-
 		var fieldName = queryWords[0];
 		var lastWord = queryWords[queryWords.length - 1]
-
 
 		if (lastWord.match(/^(\d)*$/) !== null) {
 			lastWord = parseInt(lastWord);
