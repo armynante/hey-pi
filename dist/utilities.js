@@ -18,7 +18,7 @@ var utilities = {
 	},
 	stripPath: function stripPath(path) {
 
-		path = path.split("/");
+		path = path.toLowerCase().split("/");
 		path.splice(0, 2);
 		return path;
 	},
@@ -35,7 +35,7 @@ var utilities = {
 
 		if (query.length === 0) return {};
 
-		var queryWords = query.split('_');
+		var queryWords = query.toLowerCase().split('_');
 
 		var fieldName = queryWords[0];
 		var lastWord = queryWords[queryWords.length - 1];

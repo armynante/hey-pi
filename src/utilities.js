@@ -7,7 +7,7 @@ var utilities = {
 	},
 	stripPath: function(path) {
 
-		path = path.split("/");
+		path = path.toLowerCase().split("/");
 		path.splice(0, 2);
 		return path;
 	},
@@ -22,13 +22,13 @@ var utilities = {
 			/name_is_not_andrew
 		*/
 
-		if (query.length === 0)
-			return {};
+		if (query.length === 0) return {};
 
-		var queryWords = query.split('_');
+		var queryWords = query.toLowerCase().split('_');
 
 		var fieldName = queryWords[0];
 		var lastWord = queryWords[queryWords.length - 1]
+
 
 		if (lastWord.match(/^(\d)*$/) !== null) {
 			lastWord = parseInt(lastWord);

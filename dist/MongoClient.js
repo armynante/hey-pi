@@ -77,21 +77,44 @@ var MongoClient = (function (_Mongo) {
       });
       return promise;
     }
+  }, {
+    key: '_get',
+    value: function _get(collectionName, query) {
+      var _this4 = this;
+
+      var promise = new Promise(function (resolve, reject) {
+        console.log(query);
+        _this4.db.collection(collectionName).find(query, function (err, resp) {
+          //check for duplicate entry
+          if (err !== null) {
+            reject({ code: 400, message: "error querying " + query });
+          } else {
+            resp.toArray(function (err, docs) {
+              if (err !== null) {
+                reject(err);
+              } else {
+                resolve(docs);
+              }
+            });
+          }
+        });
+      });
+      return promise;
+    }
 
     //simple update for admin functions
   }, {
     key: '_update',
     value: function _update(name, query, obj) {
-      var _this4 = this;
+      var _this5 = this;
 
       var promise = new Promise(function (resolve, reject) {
-        _this4.db.collection(name).update(query, obj, function (err, resp) {
+        _this5.db.collection(name).updateOne(query, { $set: obj }, function (err, resp) {
           //check for duplicate entry
           if (err !== null) {
             reject({ code: 400, message: err });
           } else {
-            console.log(resp);
-            resolve(resp.ops[0]);
+            resolve(resp);
           }
         });
       });
@@ -100,11 +123,11 @@ var MongoClient = (function (_Mongo) {
   }, {
     key: '_getData',
     value: function _getData(path, id) {
-      var _this5 = this;
+      var _this6 = this;
 
       var promise = new Promise(function (resolve, reject) {
 
-        _this5._propagateQuery(path).then(function (resolveObj) {
+        _this6._propagateQuery(path).then(function (resolveObj) {
           var collection = resolveObj.collection;
           var mongoQuery = resolveObj.mongoQuery;
 
@@ -139,11 +162,11 @@ var MongoClient = (function (_Mongo) {
   }, {
     key: '_delData',
     value: function _delData(path, id) {
-      var _this6 = this;
+      var _this7 = this;
 
       var promise = new Promise(function (resolve, reject) {
 
-        _this6._propagateQuery(path, id).then(function (resolveObj) {
+        _this7._propagateQuery(path, id).then(function (resolveObj) {
           var collection = resolveObj.collection;
           var mongoQuery = resolveObj.mongoQuery;
           mongoQuery['heypi_id'] = id;
@@ -158,7 +181,8 @@ var MongoClient = (function (_Mongo) {
             var numDocsDeleted = result.deletedCount;
             var responseData = {
               "code": 200,
-              "message": "Deleteted " + numDocsDeleted + " documents."
+              "message": "Deleteted " + numDocsDeleted + " documents.",
+              "docDelta": numDocsDeleted
             };
             resolve(responseData);
           });
@@ -175,7 +199,7 @@ var MongoClient = (function (_Mongo) {
   }, {
     key: '_propagateQuery',
     value: function _propagateQuery(path, id) {
-      var _this7 = this;
+      var _this8 = this;
 
       var pathArray = [];
       if (path.length % 2 === 1) path.push("");
@@ -202,7 +226,7 @@ var MongoClient = (function (_Mongo) {
             mongoQuery = _underscore2['default'].extend(mongoQuery, result.fkQuery);
 
             var promise = new Promise(function (resolve, reject) {
-              _this7._loadCollection(collectionName).then(function (collection) {
+              _this8._loadCollection(collectionName).then(function (collection) {
                 if (index !== pathArray.length - 1) {
                   var cursor = collection.find(mongoQuery);
 
@@ -258,13 +282,13 @@ var MongoClient = (function (_Mongo) {
   }, {
     key: '_updateData',
     value: function _updateData(path, data, id) {
-      var _this8 = this;
+      var _this9 = this;
 
       var collectionName = path[0];
 
       var promise = new Promise(function (resolve, reject) {
 
-        _this8._loadCollection(collectionName).then(function (collection) {
+        _this9._loadCollection(collectionName).then(function (collection) {
           return updateDataHelper(collection, id);
         }).then(function (response) {
 

@@ -32,6 +32,8 @@ var _morgan = require('morgan');
 
 var _morgan2 = _interopRequireDefault(_morgan);
 
+var _mongodb = require("mongodb");
+
 //routers
 
 var _routesAuthJs = require('./routes/auth.js');
@@ -64,18 +66,27 @@ app.use(_bodyParser2['default'].json());
 var checkAuth = function checkAuth(req, res, next) {
 	var token = req.body.token || req.query.token || req.headers['x-access-token'];
 	if (token) {
-		_jsonwebtoken2['default'].verify(token, _configJs2['default'].secret, function (err, valid) {
+		_jsonwebtoken2['default'].verify(token, _configJs2['default'].secret, function (err, validUser) {
 			if (err) {
 				res.status(401).json({ success: false, message: 'Failed to authenticate token.' });
 			} else {
-				//if valid token add user_id to req
-				req.user = valid._id;
-				next();
+
+				Mongo._get('users', { '_id': new _mongodb.ObjectID(validUser._id) }).then(function (docs) {
+					if (docs.length > 0) {
+						req.user = docs[0];
+						next();
+					} else {
+						res.code(500).json("can't find user");
+					}
+				})['catch'](function (err) {
+					res.code(500).json(err.message);
+				});
+				//user is stuck withthe token vesion// need to re load the user object
 			}
 		});
 	} else {
-		res.status(401).json({ success: false, message: 'Failed to provide authentication token.' });
-	}
+			res.status(401).json({ success: false, message: 'Failed to provide authentication token.' });
+		}
 };
 
 var urlStrip = function urlStrip(req, res, next) {

@@ -1,6 +1,7 @@
 import express from 'express'
 import Mongo from '../server.js';
 import bodyParser from 'body-parser';
+import { ObjectID } from "mongodb";
 
 
 var router = express.Router();
@@ -8,7 +9,9 @@ var router = express.Router();
 
 router.get('/*', (req, res) => {
 		if(req.strip_path[0] !== undefined) {
-	 		Mongo._getData(req.strip_path, req.user).then((resp) => {
+	 		Mongo._getData(req.strip_path, req.user._id).then((resp) => {
+        req.user.reads++;
+        Mongo._update('users',{'_id':req.user._id}, req.user);
 				res.status(resp.code).json(resp.message);
 			})
 			.catch((err) => {
@@ -20,28 +23,34 @@ router.get('/*', (req, res) => {
 	})
 
 router.post('/*', (req,res) => {
-		Mongo._saveData(req.strip_path, req.body, req.user).then((resp) => {
-			res.status(resp.code).json(resp.message);
+		Mongo._saveData(req.strip_path, req.body, req.user._id).then((resp) => {
+      req.user.writes++;
+      req.user.numDocs++;
+      Mongo._update('users',{'_id':req.user._id}, req.user);
+			res.json(resp.message);
 		})
 		.catch((err) => {
 			res.status(err.code).json("error saving data");
 		});
-    req.user.documents++;
-    Mongo._update('users',{'_id':user._id}, req.user);
 	})
 
 router.put('/*', (req,res) => {
-		Mongo._updateData(req.strip_path, req.body, req.user).then((resp) => {
+		Mongo._updateData(req.strip_path, req.body, req.user._id).then((resp) => {
+      req.user.writes++;
+      Mongo._update('users',{'_id':new ObjectID(req.user._id)}, req.user);
 			res.status(resp.code).json(resp.message);
 		})
 		.catch((err) => {
-      console.log(err);
 			res.status(500).json(err.message);
 		});
 	})
 
 router.delete('/*', (req,res) => {
-		Mongo._delData(req.strip_path, req.user).then((resp) => {
+		Mongo._delData(req.strip_path, req.user._id).then((resp) => {
+      debugger;
+      req.user.writes += resp.docDelta;
+      req.user.numDocs -= resp.docDelta;
+      Mongo._update('users',{'_id':new ObjectID(req.user._id)}, req.user);
 			res.status(resp.code).json(resp.message);
 		})
 		.catch((err) => {

@@ -6,31 +6,41 @@ import jwt from 'jsonwebtoken';
 
 var now = new Date();
 
-export class User() {
+export class User {
+
   constructor(email) {
-    this.name = name;
     this.email = email;
     this.password = '';
-    this.numCollections = 0;
-    this.numCollections = 0;
+    this.numCols = 0;
+    this.numDocs = 0;
+    this.writes = 0;
+    this.reads = 0;
     this.createdOn = now;
   }
 
   save() {
-    Mongo._save('users',this).then((savedUser) => {
-      //if the user is created assign a token
-      var token = jwt.sign(savedUser, config.secret, {
-        expiresInMinutes: 1440 //24r
-      });
-      // remover clear text pass
-      delete savedUser['pass'];
-      savedUser['token'] = token;
-      resolve({code: 201, message: savedUser});
-    })
+    var promise = new Promise(
+      (resolve, reject) => {
+        Mongo._save('users',this).then((savedUser) => {
+          //if the user is created assign a token
+          var token = jwt.sign(savedUser, config.secret, {
+            expiresInMinutes: 1440 //24r
+          });
+          // remover clear text pass
+          delete savedUser['pass'];
+          savedUser['token'] = token;
+          resolve({code: 201, message: savedUser});
+        })
+        .catch((err) => {
+          reject({code:500,message:err});
+        });
+      }
+    )
+    return promise;
   }
 
   setPassword(pass) {
-    promise = new Promise(
+    var promise = new Promise(
       (resolve, reject) => {
         utilities.generateHash(pass).then((hash) => {
           this.password = hash;
@@ -41,5 +51,6 @@ export class User() {
         })
       }
     )
+    return promise;
   }
 }

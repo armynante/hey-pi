@@ -5,9 +5,10 @@ import config from './config.js';
 import jwt from 'jsonwebtoken';
 import utilities from './utilities.js';
 import express from 'express';
-
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
+import { ObjectID } from "mongodb";
+
 
 //routers
 import auth from './routes/auth.js';
@@ -31,13 +32,23 @@ app.use(bodyParser.json());
 var checkAuth = function(req, res, next) {
 	var token = req.body.token || req.query.token || req.headers['x-access-token'];
 	if (token) {
-		jwt.verify(token, config.secret, (err,valid) => {
+		jwt.verify(token, config.secret, (err, validUser) => {
 			if (err) {
 				res.status(401).json({ success: false, message: 'Failed to authenticate token.' });
 			} else {
-				//if valid token add user_id to req
-				req.user = valid._id;
-				next();
+
+				Mongo._get('users',{'_id': new ObjectID(validUser._id)}).then((docs) => {
+					if (docs.length > 0) {
+						req.user = docs[0];
+						next();
+					} else {
+						res.code(500).json("can't find user");
+					}
+				})
+				.catch((err) => {
+					res.code(500).json(err.message);
+				});
+				//user is stuck withthe token vesion// need to re load the user object
 			}
 		});
 	} else {

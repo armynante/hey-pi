@@ -3,7 +3,7 @@
  import utilities from './utilities.js';
  import collectionUtil from './collectionUtil.js';
  import _ from "underscore";
- import { MongoClient as Mongo } from "mongodb";
+ import { MongoClient as Mongo} from "mongodb";
 
  export class MongoClient extends Mongo {
 
@@ -51,17 +51,40 @@
     return promise;
   }
 
+  _get(collectionName,query) {
+    var promise = new Promise(
+      (resolve, reject) => {
+        console.log(query);
+        this.db.collection(collectionName).find(query, (err,resp) => {
+          //check for duplicate entry
+          if (err !== null ) {
+            reject({code: 400, message: "error querying " + query })
+          } else {
+            resp.toArray( (err, docs)=> {
+              if (err !== null ) {
+                reject(err);
+              } else {
+                resolve(docs);
+              }
+            })
+          }
+        });
+      }
+    );
+    return promise;
+  }
+
+
   //simple update for admin functions
   _update(name, query, obj) {
     var promise = new Promise(
       (resolve, reject) => {
-        this.db.collection(name).update(query, obj, (err,resp) => {
+        this.db.collection(name).updateOne(query, {$set: obj}, (err,resp) => {
           //check for duplicate entry
           if (err !== null ) {
             reject({code: 400, message: err })
           } else {
-            console.log(resp);
-            resolve(resp.ops[0]);
+            resolve(resp);
           }
         });
       }
@@ -125,7 +148,8 @@
  					var numDocsDeleted = result.deletedCount;
  					var responseData = {
  						"code": 200,
- 						"message": "Deleteted " + numDocsDeleted + " documents."
+ 						"message": "Deleteted " + numDocsDeleted + " documents.",
+ 						"docDelta": numDocsDeleted 
  					};
  					resolve(responseData);
  				});
