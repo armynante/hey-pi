@@ -6,7 +6,6 @@ import { ObjectID } from "mongodb";
 
 var router = express.Router();
 
-
 router.get('/*', (req, res) => {
 		if(req.strip_path[0] !== undefined) {
 	 		Mongo._getData(req.strip_path, req.user._id).then((resp) => {

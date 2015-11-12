@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/armynante/hey-pi#readme",
   "dependencies": {
+    "bcryptjs": "^2.3.0",
     "body-parser": "^1.14.1",
     "express": "^4.13.3",
     "jsonwebtoken": "^5.4.1",

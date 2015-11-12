@@ -1,6 +1,6 @@
 import Mongo from '../server.js';
 import config from '../config.js';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import utilities from '../utilities.js';
 import jwt from 'jsonwebtoken';
 

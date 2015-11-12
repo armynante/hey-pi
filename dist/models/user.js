@@ -18,9 +18,9 @@ var _configJs = require('../config.js');
 
 var _configJs2 = _interopRequireDefault(_configJs);
 
-var _bcrypt = require('bcrypt');
+var _bcryptjs = require('bcryptjs');
 
-var _bcrypt2 = _interopRequireDefault(_bcrypt);
+var _bcryptjs2 = _interopRequireDefault(_bcryptjs);
 
 var _utilitiesJs = require('../utilities.js');
 

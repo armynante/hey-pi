@@ -18,9 +18,9 @@ var _configJs = require('../config.js');
 
 var _configJs2 = _interopRequireDefault(_configJs);
 
-var _bcrypt = require('bcrypt');
+var _bcryptjs = require('bcryptjs');
 
-var _bcrypt2 = _interopRequireDefault(_bcrypt);
+var _bcryptjs2 = _interopRequireDefault(_bcryptjs);
 
 var _collectionUtilJs = require('../collectionUtil.js');
 
@@ -51,7 +51,7 @@ router.post('/', function (req, res) {
 		if (resp.message.length) {
 			var user = resp.message[0];
 			//test the password
-			_bcrypt2['default'].compare(pass, user.password, function (err, valid) {
+			_bcryptjs2['default'].compare(pass, user.password, function (err, valid) {
 				if (valid) {
 					var token = _jsonwebtoken2['default'].sign(user, _configJs2['default'].secret, {
 						expiresInMinutes: 1440 //24r
