@@ -155,10 +155,28 @@ body {
 }
 
 .api .code-block {
-
+  background-color: #4A4A4A;
+  margin-top: 10px;
+  word-break: break-all;
+  padding: 20px;
+  font-family: 'Source Code Pro', Menlo, Consolas, Monaco, monospace;
 }
 
+.api pre {
+  overflow-x: scroll;
+}
 
+.string { color:  #B8E986; }
+.number { color: darkorange; }
+.boolean { color: blue; }
+.null { color: magenta; }
+.key { color: magenta; }
+
+
+@font-face {
+  font-family: Source Code Pro;
+  src: url("/SourceCodePro-Regular.otf") format("opentype");
+}
 @font-face {
   font-family: Molot;
   src: url("/Molot.otf") format("opentype");
