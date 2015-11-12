@@ -72,7 +72,7 @@ html(lang="en")
         div.route-name Register
         div.description Signup with your email and password
         div.code-block curl -H "Content-Type: application/json" -X POST -d '{"username":"andrew@hey-pi.com","password":"123456"}' http://localhost:3000/register}
-        div.description You'll recive an 
+        div.description You'll recive an response with your user information. Save the token object to pass along with your requests
         div.code-block 
           pre
             !=syntaxHighlight(jsonRaw)

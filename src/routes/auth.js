@@ -22,8 +22,7 @@ router.post('/',(req,res) => {
 		if (resp.message.length) {
 			var user = resp.message[0];
 			//test the password
-			bcrypt.compare(pass, user.pass, (err,valid) => {
-
+			bcrypt.compare(pass, user.password, (err,valid) => {
 				if(valid) {
 					var token = jwt.sign(user, config.secret, {
 						expiresInMinutes: 1440 //24r
