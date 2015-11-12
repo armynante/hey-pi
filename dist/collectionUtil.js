@@ -3,10 +3,10 @@
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-var colUtil = {
+var collectionUtil = {
 	findOne: function findOne(collection, query) {
 		var promise = new Promise(function (resolve, reject) {
-			collection.find(query, function (err, docs) {
+			collection.find(query, { heypi_id: 0 }, function (err, docs) {
 				docs.toArray(function (err, docArray) {
 
 					if (docArray.length > 1) {
@@ -21,43 +21,10 @@ var colUtil = {
 		});
 		return promise;
 	},
-	//
-	// findMany: function(collection, query){
-	// 	var promise = new Promise(
-	// 		(resolve, reject) => {
-	// 			debugger;
-	// 			collection.find(query, (err, docs) => {
-	// 				debugger;
-	// 				if (err) console.log(err);
-	//
-	// 				// docs.toArray((err, docArray) => {
-	// 				// 	//debugger;
-	// 				// 	if (!docArray.length){
-	// 				// 		reject("No documents found\n");
-	// 				// 	}
-	// 				// 	else{
-	// 				// 		resolve(docArray);
-	// 				// 	}
-	// 				// });
-	//
-	// 				docs.toArray()
-	// 				.then((docArray) => {
-	// 					debugger;
-	// 					console.log(docArray);
-	// 					resolve(docArray);
-	// 				}, (err) => {
-	// 					debugger;
-	// 					reject(err);
-	// 					console.log(err)
-	// 				});
-	// 			}
-	// 		})
-	// 	return promise;
-	// },
 
 	insertOne: function insertOne(collection, data) {
 		var promise = new Promise(function (resolve, reject) {
-			collection.insertOne(data, function (err, result) {
+			collection.insertOne(data, { heypi_id: 0 }, function (err, result) {
 				if (err) {
 					reject(err);
 				} else {
@@ -71,7 +38,7 @@ var colUtil = {
 	updateOne: function updateOne(collection, query, data) {
 
 		var promise = new Promise(function (resolve, reject) {
-			collection.updateOne(query, { $set: data }, function (err, result) {
+			collection.updateOne(query, { $set: data }, { heypi_id: 0 }, function (err, result) {
 				if (err) {
 					reject({ "message": " Error updating doc: " + err });
 				} else {
@@ -83,6 +50,6 @@ var colUtil = {
 	}
 };
 
-exports["default"] = colUtil;
+exports["default"] = collectionUtil;
 module.exports = exports["default"];
 //# sourceMappingURL=collectionUtil.js.map

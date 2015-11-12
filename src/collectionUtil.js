@@ -1,10 +1,13 @@
 "use strict";
 
-var colUtil =  {
+var collectionUtil =  {
 	findOne: function(collection, query){
 		var promise = new Promise(
 			(resolve, reject) => {
-				collection.find(query, (err, docs) => {
+				collection.find(
+					query,
+					{heypi_id:0},
+					(err, docs) => {
 					docs.toArray((err, docArray) => {
 
 						if (docArray.length > 1){
@@ -22,44 +25,14 @@ var colUtil =  {
 		);
 		return promise;
 	},
-	//
-	// findMany: function(collection, query){
-	// 	var promise = new Promise(
-	// 		(resolve, reject) => {
-	// 			debugger;
-	// 			collection.find(query, (err, docs) => {
-	// 				debugger;
-	// 				if (err) console.log(err);
-	//
-	// 				// docs.toArray((err, docArray) => {
-	// 				// 	//debugger;
-	// 				// 	if (!docArray.length){
-	// 				// 		reject("No documents found\n");
-	// 				// 	}
-	// 				// 	else{
-	// 				// 		resolve(docArray);
-	// 				// 	}
-	// 				// });
-	//
-	// 				docs.toArray()
-	// 				.then((docArray) => {
-	// 					debugger;
-	// 					console.log(docArray);
-	// 					resolve(docArray);
-	// 				}, (err) => {
-	// 					debugger;
-	// 					reject(err);
-	// 					console.log(err)
-	// 				});
-	// 			}
-	// 		})
-	// 	return promise;
-	// },
 
 	insertOne: function(collection, data) {
 		var promise = new Promise(
 			(resolve, reject) => {
-				collection.insertOne(data,function(err, result){
+				collection.insertOne(
+					data,
+					{heypi_id:0},
+					function(err, result){
 					if (err){
 			  	  		reject(err);
 			  	  	}
@@ -76,20 +49,22 @@ var colUtil =  {
 
 		var promise = new Promise (
 			(resolve, reject) => {
-					collection.updateOne(query,
-					{ $set: data },
-					(err, result) => {
+					collection.updateOne(
+						query,
+						{ $set: data },
+						{heypi_id:0},
+						(err, result) => {
 						if (err) {
 							reject({"message":" Error updating doc: "  + err});
 						} else {
 							resolve({"message": "Successfully updated the document", "result": result});
 						}
 					}
-				)
+				);
 			}
 		);
 		return promise;
 	}
 };
 
-export default colUtil;
+export default collectionUtil;

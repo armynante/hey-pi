@@ -1,14 +1,24 @@
 "use strict";
 
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+var _bcrypt = require('bcrypt');
+
+var _bcrypt2 = _interopRequireDefault(_bcrypt);
+
 var ObjectID = require("mongodb").ObjectID;
 
-module.exports = {
+var utilities = {
 	getFieldNames: function getFieldNames(collection) {
 		return Object.keys(collection);
 	},
 	stripPath: function stripPath(path) {
 
-		path = path.split("/");
+		path = path.toLowerCase().split("/");
 		path.splice(0, 2);
 		return path;
 	},
@@ -24,12 +34,11 @@ module.exports = {
   */
 
 		if (query.length === 0) return {};
+		//allow for spaces in url to be parsed properly
+		var query = query.replace(/\%20/g, ' ');
 
-		var queryWords = query.split('_');
-
+		var queryWords = query.toLowerCase().split('_');
 		console.log(queryWords);
-		debugger;
-
 		var fieldName = queryWords[0];
 		var lastWord = queryWords[queryWords.length - 1];
 
@@ -45,15 +54,25 @@ module.exports = {
 		var now = new Date().toISOString();
 
 		if (query.match(/greater_than/)) {
-			mongoQuery[fieldName] = { $gt: parseInt(lastWord) };
+			mongoQuery[fieldName] = {
+				$gt: parseInt(lastWord)
+			};
 		} else if (query.match(/less_than/)) {
-			mongoQuery[fieldName] = { $lt: parseInt(lastWord) };
+			mongoQuery[fieldName] = {
+				$lt: parseInt(lastWord)
+			};
 		} else if (query.match(/is_not/)) {
-			mongoQuery[fieldName] = { $ne: lastWord };
+			mongoQuery[fieldName] = {
+				$ne: lastWord
+			};
 		} else if (query.match(/is_in_future/)) {
-			mongoQuery[fieldName] = { $gt: now };
+			mongoQuery[fieldName] = {
+				$gt: now
+			};
 		} else if (query.match(/is_in_past/)) {
-			mongoQuery[fieldName] = { $lt: now };
+			mongoQuery[fieldName] = {
+				$lt: now
+			};
 		} else if (query.match(/is/)) {
 			mongoQuery[fieldName] = lastWord;
 		} else if (query.match(/^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/i)) {
@@ -72,6 +91,24 @@ module.exports = {
 		delete doc["_id"];
 		doc["id"] = id.toString();
 		return doc;
+	},
+
+	generateHash: function generateHash(pass) {
+		var promise = new Promise(function (resolve, reject) {
+			_bcrypt2["default"].genSalt(10, function (err, salt) {
+				_bcrypt2["default"].hash(pass, salt, function (err, hash) {
+					if (err) {
+						reject(err);
+					} else {
+						resolve(hash);
+					};
+				});
+			});
+		});
+		return promise;
 	}
 };
+
+exports["default"] = utilities;
+module.exports = exports["default"];
 //# sourceMappingURL=utilities.js.map
