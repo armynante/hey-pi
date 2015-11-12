@@ -1,5 +1,5 @@
 var ObjectID = require("mongodb").ObjectID;
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 var utilities = {
 	getFieldNames: function(collection) {

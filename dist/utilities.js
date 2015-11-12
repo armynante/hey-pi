@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-var _bcrypt = require('bcrypt');
+var _bcryptjs = require('bcryptjs');
 
-var _bcrypt2 = _interopRequireDefault(_bcrypt);
+var _bcryptjs2 = _interopRequireDefault(_bcryptjs);
 
 var ObjectID = require("mongodb").ObjectID;
 
@@ -95,8 +95,8 @@ var utilities = {
 
 	generateHash: function generateHash(pass) {
 		var promise = new Promise(function (resolve, reject) {
-			_bcrypt2["default"].genSalt(10, function (err, salt) {
-				_bcrypt2["default"].hash(pass, salt, function (err, hash) {
+			_bcryptjs2["default"].genSalt(10, function (err, salt) {
+				_bcryptjs2["default"].hash(pass, salt, function (err, hash) {
 					if (err) {
 						reject(err);
 					} else {
