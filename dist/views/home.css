@@ -168,9 +168,8 @@ body {
 
 .string { color:  #B8E986; }
 .number { color: darkorange; }
-.boolean { color: blue; }
-.null { color: magenta; }
-.key { color: magenta; }
+.boolean { color: magenta; }
+.key { color: #4A90E2; }
 
 
 @font-face {

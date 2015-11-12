@@ -34,9 +34,9 @@ var utilities = {
   */
 
 		if (query.length === 0) return {};
-
+		var query = query.replace(/\%20/g, ' ');
 		var queryWords = query.toLowerCase().split('_');
-
+		console.log(queryWords);
 		var fieldName = queryWords[0];
 		var lastWord = queryWords[queryWords.length - 1];
 
