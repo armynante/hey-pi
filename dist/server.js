@@ -50,6 +50,9 @@ var _routesApiJs2 = _interopRequireDefault(_routesApiJs);
 
 //initialize express:
 var app = (0, _express2['default'])();
+app.set('view engine', 'jade');
+app.set('views', __dirname + '/views');
+app.use(_express2['default']['static']('public'));
 
 //load the database
 var Mongo = new _MongoClientJs.MongoClient();
@@ -96,7 +99,10 @@ var urlStrip = function urlStrip(req, res, next) {
 };
 
 //pre-auth routes
-app.get('/');
+app.get('/', function (req, res) {
+	res.render('home', { title: 'Hey', message: 'Hello there!' });
+});
+
 app.use('/register', _routesRegisterJs2['default']);
 app.use('/authorize', _routesAuthJs2['default']);
 

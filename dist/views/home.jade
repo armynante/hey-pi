@@ -1,0 +1,51 @@
+-
+  list = ["Home", "About", "Links"]
+
+doctype html
+html(lang="en")
+  head
+    title= message
+    style
+      include home.css
+  body
+    div.header
+      div.billboard
+        div.billboard-board 
+        div.billboard-header HEY-PI
+        div.billboard-welcome welcome to...
+        
+      div.navigation
+        ul
+          each item in list
+            li= item
+      
+    div.tres 
+      div.welcome Hey-pi is a dead-simple api for your prototype
+      
+      div.boxes
+      
+        div.item.register
+          div.item-box
+            div.box gary@super.net
+            div.box(style={"line-height": "2"}) **************
+          div.sub-heading Register
+          div.sub-text Signup with your email
+
+          
+        div.item.register
+          div.item-box
+            img(src="/coin.png")
+          div.sub-heading Get a token
+          div.sub-text Pass this along with each request
+          
+        div.item.register
+          div.item-box(style={"text-align": "center"})
+            !="01111001 01101111 01110101 <br/> 00100000 01100001 01110010 <br/>01100101 00100000 01100001 <br/>00100000 01101110 01100101 <br/> 01110010 01100100"
+          div.sub-heading Save Stuff!
+          div.sub-text POST,GET,PUT,DELETE to your heart's desire
+        
+    div.api
+      div.route
+        div.route-name Register
+        div.description Signup with your email and password
+        div.code-block 

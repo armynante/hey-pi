@@ -17,6 +17,9 @@ import api from './routes/api.js';
 
 //initialize express:
 var app = express();
+app.set('view engine', 'jade');
+app.set('views', __dirname + '/views')
+app.use(express.static('public'));
 
 //load the database
 var Mongo = new MongoClient();
@@ -63,7 +66,10 @@ var urlStrip = function(req, res, next) {
 };
 
 //pre-auth routes
-app.get('/')
+app.get('/', function(req,res) {
+	res.render('home', { title: 'Hey', message: 'Hello there!'});
+})
+
 app.use('/register', register)
 app.use('/authorize', auth);
 
