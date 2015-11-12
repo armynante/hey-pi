@@ -34,7 +34,9 @@ var utilities = {
   */
 
 		if (query.length === 0) return {};
+		//allow for spaces in url to be parsed properly
 		var query = query.replace(/\%20/g, ' ');
+
 		var queryWords = query.toLowerCase().split('_');
 		console.log(queryWords);
 		var fieldName = queryWords[0];
