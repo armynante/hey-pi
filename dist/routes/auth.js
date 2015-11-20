@@ -54,7 +54,7 @@ router.post('/', function (req, res) {
 			_bcryptjs2['default'].compare(pass, user.password, function (err, valid) {
 				if (valid) {
 					var token = _jsonwebtoken2['default'].sign(user, _configJs2['default'].secret, {
-						expiresInMinutes: 1440 //24r
+						expiresIn: "30d" //24r
 					});
 
 					user['token'] = token;

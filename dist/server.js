@@ -44,6 +44,10 @@ var _routesRegisterJs = require('./routes/register.js');
 
 var _routesRegisterJs2 = _interopRequireDefault(_routesRegisterJs);
 
+var _routesConfirmJs = require('./routes/confirm.js');
+
+var _routesConfirmJs2 = _interopRequireDefault(_routesConfirmJs);
+
 var _routesApiJs = require('./routes/api.js');
 
 var _routesApiJs2 = _interopRequireDefault(_routesApiJs);
@@ -73,13 +77,12 @@ var checkAuth = function checkAuth(req, res, next) {
 			if (err) {
 				res.status(401).json({ success: false, message: 'Failed to authenticate token.' });
 			} else {
-
 				Mongo._get('users', { '_id': new _mongodb.ObjectID(validUser._id) }).then(function (docs) {
 					if (docs.length > 0) {
 						req.user = docs[0];
 						next();
 					} else {
-						res.code(500).json("can't find user");
+						res.status(500).json("can't find user");
 					}
 				})['catch'](function (err) {
 					res.code(500).json(err.message);
@@ -92,6 +95,14 @@ var checkAuth = function checkAuth(req, res, next) {
 		}
 };
 
+var confirmed = function confirmed(req, res, next) {
+	if (!req.user.confirmed) {
+		res.status(400).json({ success: false, message: "please confirm account" });
+	} else {
+		next();
+	}
+};
+
 var urlStrip = function urlStrip(req, res, next) {
 	var path = _utilitiesJs2['default'].stripPath(req.url);
 	req.strip_path = path;
@@ -100,7 +111,7 @@ var urlStrip = function urlStrip(req, res, next) {
 
 //pre-auth routes
 app.get('/', function (req, res) {
-	res.render('home', { title: 'Hey', message: 'Hello there!' });
+	res.render('home', { "email": "mr.mixx@naazdy.net", "token": "LONG_ASS_TOKEN", "password": "your_password" });
 });
 
 app.use('/register', _routesRegisterJs2['default']);
@@ -108,6 +119,10 @@ app.use('/authorize', _routesAuthJs2['default']);
 
 //check authentication before proceeding to api
 app.use(checkAuth);
+
+//confirmation
+app.use('/confirm', _routesConfirmJs2['default']);
+app.use(confirmed);
 
 //strip path
 app.use(urlStrip);

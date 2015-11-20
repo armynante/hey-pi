@@ -1,16 +1,33 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, '__esModule', {
 	value: true
 });
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var _bcryptjs = require('bcryptjs');
 
 var _bcryptjs2 = _interopRequireDefault(_bcryptjs);
 
+var _nodemailer = require('nodemailer');
+
+var _nodemailer2 = _interopRequireDefault(_nodemailer);
+
+var _configJs = require('./config.js');
+
+var _configJs2 = _interopRequireDefault(_configJs);
+
+var now = new Date();
 var ObjectID = require("mongodb").ObjectID;
+
+var server = _nodemailer2['default'].createTransport({
+	service: 'Gmail',
+	auth: {
+		user: 'andrew.armenante@gmail.com',
+		pass: _configJs2['default'].emailPass
+	}
+});
 
 var utilities = {
 	getFieldNames: function getFieldNames(collection) {
@@ -86,6 +103,19 @@ var utilities = {
 		return mongoQuery;
 	},
 
+	sendEmail: function sendEmail(user) {
+		var welcomeEmail = {
+			html: "<p>please click on the link to confirm account<p></br><a href='http://hey-pi.com/confirm?token=" + user.token + "'>confirm account...</a>",
+			from: "Andrew @ Hey-PI<andrew.armenante@gmail.com>",
+			to: user.email,
+			subject: "Welcome to Hey-PI!"
+		};
+
+		server.sendMail(welcomeEmail, function (err, info) {
+			console.log(err || info);
+		});
+	},
+
 	sanitizeId: function sanitizeId(doc) {
 		var id = doc._id;
 		delete doc["_id"];
@@ -95,8 +125,8 @@ var utilities = {
 
 	generateHash: function generateHash(pass) {
 		var promise = new Promise(function (resolve, reject) {
-			_bcryptjs2["default"].genSalt(10, function (err, salt) {
-				_bcryptjs2["default"].hash(pass, salt, function (err, hash) {
+			_bcryptjs2['default'].genSalt(10, function (err, salt) {
+				_bcryptjs2['default'].hash(pass, salt, function (err, hash) {
 					if (err) {
 						reject(err);
 					} else {
@@ -109,6 +139,6 @@ var utilities = {
 	}
 };
 
-exports["default"] = utilities;
-module.exports = exports["default"];
+exports['default'] = utilities;
+module.exports = exports['default'];
 //# sourceMappingURL=utilities.js.map

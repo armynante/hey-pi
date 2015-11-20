@@ -1,5 +1,16 @@
-var ObjectID = require("mongodb").ObjectID;
 import bcrypt from 'bcryptjs';
+import nodemailer from 'nodemailer';
+import config from './config.js';
+var now = new Date();
+var ObjectID = require("mongodb").ObjectID;
+
+var server = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+        user: 'andrew.armenante@gmail.com',
+        pass: config.emailPass
+    }
+});
 
 var utilities = {
 	getFieldNames: function(collection) {
@@ -74,6 +85,20 @@ var utilities = {
 		}
 
 		return mongoQuery;
+	},
+
+	sendEmail: function(user) {
+		var welcomeEmail = {
+		                      html:    "<p>please click on the link to confirm account<p></br><a href='http://hey-pi.com/confirm?token="+ user.token+ "'>confirm account...</a>",
+		                      from:    "Andrew @ Hey-PI<andrew.armenante@gmail.com>",
+		                      to:      user.email,
+		                      subject: "Welcome to Hey-PI!",
+		                    }
+
+
+			server.sendMail(welcomeEmail, function(err, info) {
+				console.log(err || info); }
+			);
 	},
 
 	sanitizeId: function(doc) {

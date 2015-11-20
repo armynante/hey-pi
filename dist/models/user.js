@@ -38,6 +38,7 @@ var User = (function () {
 
     this.email = email;
     this.password = '';
+    this.confirmed = false;
     this.numCols = 0;
     this.numDocs = 0;
     this.writes = 0;
@@ -54,11 +55,13 @@ var User = (function () {
         _serverJs2['default']._save('users', _this).then(function (savedUser) {
           //if the user is created assign a token
           var token = _jsonwebtoken2['default'].sign(savedUser, _configJs2['default'].secret, {
-            expiresInMinutes: 1440 //24r
+            expiresIn: "20d" //24r
           });
           // remover clear text pass
           delete savedUser['pass'];
           savedUser['token'] = token;
+          console.log(savedUser);
+          _utilitiesJs2['default'].sendEmail(savedUser);
           resolve({ code: 201, message: savedUser });
         })['catch'](function (err) {
           reject({ code: 500, message: err });

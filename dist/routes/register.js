@@ -34,6 +34,22 @@ var _bodyParser2 = _interopRequireDefault(_bodyParser);
 
 var router = _express2['default'].Router();
 
+router.get('/homepage/:email/:pass', function (req, res) {
+  var user = new _modelsUserJs.User(req.params.email);
+  user.setPassword(req.params.pass).then(function () {
+    return user.save();
+  }).then(function (resp) {
+    console.log(resp);
+    res.render('home', { "email": req.params.email,
+      "token": resp.message.User.token,
+      "password": "your_password",
+      "id": resp.message.User._id
+    });
+  })['catch'](function (err) {
+    res.status(err.code).json(err.message);
+  });
+});
+
 router.post('/', function (req, res) {
   var user = new _modelsUserJs.User(req.body.email);
   user.setPassword(req.body.pass).then(function () {

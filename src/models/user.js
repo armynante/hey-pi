@@ -3,14 +3,14 @@ import config from '../config.js';
 import bcrypt from 'bcryptjs';
 import utilities from '../utilities.js';
 import jwt from 'jsonwebtoken';
-
-var now = new Date();
+let now = new Date();
 
 export class User {
 
   constructor(email) {
     this.email = email;
     this.password = '';
+    this.confirmed = false;
     this.numCols = 0;
     this.numDocs = 0;
     this.writes = 0;
@@ -18,17 +18,21 @@ export class User {
     this.createdOn = now;
   }
 
+
+
   save() {
     var promise = new Promise(
       (resolve, reject) => {
         Mongo._save('users',this).then((savedUser) => {
           //if the user is created assign a token
           var token = jwt.sign(savedUser, config.secret, {
-            expiresInMinutes: 1440 //24r
+            expiresIn: "20d" //24r
           });
           // remover clear text pass
           delete savedUser['pass'];
           savedUser['token'] = token;
+          console.log(savedUser);
+          utilities.sendEmail(savedUser);
           resolve({code: 201, message: savedUser});
         })
         .catch((err) => {

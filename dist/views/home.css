@@ -6,75 +6,155 @@ body {
   height: 30vw;
   display: flex;
   flex-direction: row;
+  z-index: 0;
 }
 .navigtion {
   z-index: 10;
   align-items: stretch;
-  order: 2
+  order: 2;
 }
 .navigation ul {
   list-style-type: none;
 }
 .navigation li {
+  font-family: Molot;
   display: inline;
+  padding: 1vw;
+}
+.navigation li a {
+  text-decoration: none;
+  color: #4A4A4A;
+}
+.navigation li a:hover {
+  color: white;
 }
 .billboard {
   align-items: stretch;
   padding: 15px;
   font-family: Molot;
-  -webkit-perspective: 50vw;
+  /*-webkit-perspective: 50vw;
   -ms-perspective: 50vw;
   -o-perspective: 50vw;
   -moz-perspective: 50vw;
-   perspective: 50vw;
+   perspective: 50vw;*/
+}
+.header .post {
+  height: 4vw;
+  width: 1vw;
+  background-color: #67512C;
+  position: absolute;
+  z-index: 10;
+  top:26vw;
+}
+.post1 {
+  left: 10vw;
+}
+.post2 {
+  left: 50vw;
 }
 .billboard-board {
-  height: 18vw;
+  position: relative;
+  height: 20vw;
   width: 50vw;
   background-color: white;
-  -webkit-transform: rotatey(26deg);
+  border: 1vh solid  #67512C;
+  /*-webkit-transform: rotatey(26deg);
   -ms-transform: rotatey(26deg);
   -o-transform: rotatey(26deg);
   -moz-transform: rotatey(26deg);
-   transform: rotatey(26deg);
-   margin-left: 10vw;
-   margin-top: 5vw;
+   transform: rotatey(26deg);*/
+   margin-left: 4vw;
+   margin-top: 4vw;
+   z-index: 100;
    /*-webkit-box-shadow: inset 19px 29px 102px -19px rgba(0,0,0,0.75);
    -moz-box-shadow: inset 19px 29px 102px -19px rgba(0,0,0,0.75);
    box-shadow: inset 19px 29px 102px -19px rgba(0,0,0,0.75);*/
 }
-.billboard-header {
+.billboard-login {
+  display: none;
+  z-index: 200;
   position: absolute;
-  top: 8vw;
-  font-size: 14vw;
-  margin-left: 12vw;
-  -webkit-transform: rotatey(26deg);
+  top: 9vw;
+  height: 15vw;
+  width: 40vw;
+  margin-left: 10vw;
+  font-size: 2vw;
+  color: #4A4A4A;
+}
+.billboard-login input {
+  border: none;
+  border: 2px solid #B8E986;
+  width: 100%;
+  font-family: Roboto;
+  color: #4A4A4A;
+  height: 1.5vw;
+  font-size: 1vw;
+  width: 100%;
+}
+.billboard-login button {
+  font-family: DancingScript;
+  border: none;
+  font-size: 2vw;
+  background-color:  white;
+  color: #4A90E2;
+  -webkit-transition: font-size 0.5s; /* Safari */
+  transition: font-size 0.5s;
+}
+.billboard-login button:hover {
+  font-size: 2.5vw;
+  background-color:  white;
+  color: #7EA1CA;
+}
+.billboard-login td {
+  text-align: right;
+}
+.billboard-login tr {
+  height: 4vw;
+}
+
+.billboard-login .input-area {
+  padding-left: 2vw;
+  width: 28vw;
+}
+
+.billboard-login table {
+  width: 100%;
+}
+
+.billboard-header {
+  z-index: 200;
+  position: absolute;
+  top: 9vw;
+  font-size: 13.5vw;
+  margin-left: 6vw;
+  /*-webkit-transform: rotatey(26deg);
   -ms-transform: rotatey(26deg);
   -o-transform: rotatey(26deg);
   -moz-transform: rotatey(26deg);
-   transform: rotatey(26deg);
+   transform: rotatey(26deg);*/
    color: #F5A623;
    -webkit-text-stroke: 2px #4A90E2;
 }
 .billboard-welcome {
+  z-index: 300;
   font-family: DancingScript;
   position: absolute;
-  top: 4vw;
-  margin-left: 10vw;
-  -webkit-transform: rotatey(26deg);
+  top: 8vw;
+  margin-left: 6vw;
+  /*-webkit-transform: rotatey(26deg);
   -ms-transform: rotatey(26deg);
   -o-transform: rotatey(26deg);
   -moz-transform: rotatey(26deg);
-   transform: rotatey(26deg);
-   font-size: 6vw;
+   transform: rotatey(26deg);*/
+   font-size: 4vw;
 }
 .tres {
   background-color: #4A4A4A;
-  height: 50vh;
+  height: auto;
   padding-bottom: 20px;
 }
 .tres .welcome {
-  font-size: 5vh;
+  font-size: 2vw;
   color: white;
   font-family: DancingScript;
   text-align: center;
@@ -97,7 +177,7 @@ body {
 }
 .item-box {
   width: 20vw;
-  height: 25vh;
+  height: 15vw;
   border-radius: 10px;
   border: 2px solid gray;
   display: flex;
@@ -112,9 +192,9 @@ body {
 }
 .box {
   margin-bottom: 10px;
-  width: 80%;
+  width: 60%;
   color: white;
-  height: 25px;
+  height: 4vh;
   border: 2px solid #B8E986;
   font-family: DancingScript;
   text-align: center;
@@ -132,20 +212,19 @@ body {
 }
 
 .api {
-  background-color: #4A90E2;
   padding-top: 30px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  color: white;
+  color: #4A4A4A;
 }
 .api .route {
   width: 80vw;
   padding: 20px;
 }
 .api .route-name {
-  border-bottom: 1px solid white;
+  border-bottom: 1px solid #4A4A4A;
   font-family: Molot;
   font-size: 4vh;
 }
@@ -156,6 +235,7 @@ body {
 
 .api .code-block {
   background-color: #4A4A4A;
+  color: white;
   margin-top: 10px;
   word-break: break-all;
   padding: 20px;

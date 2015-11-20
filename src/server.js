@@ -13,6 +13,7 @@ import { ObjectID } from "mongodb";
 //routers
 import auth from './routes/auth.js';
 import register from './routes/register.js';
+import confirm from './routes/confirm.js';
 import api from './routes/api.js';
 
 //initialize express:
@@ -39,13 +40,12 @@ var checkAuth = function(req, res, next) {
 			if (err) {
 				res.status(401).json({ success: false, message: 'Failed to authenticate token.' });
 			} else {
-
 				Mongo._get('users',{'_id': new ObjectID(validUser._id)}).then((docs) => {
 					if (docs.length > 0) {
-						req.user = docs[0];
+						req.user = docs[0]
 						next();
 					} else {
-						res.code(500).json("can't find user");
+						res.status(500).json("can't find user");
 					}
 				})
 				.catch((err) => {
@@ -59,6 +59,14 @@ var checkAuth = function(req, res, next) {
 	}
 }
 
+var confirmed = function(req, res, next) {
+	if (!req.user.confirmed) {
+		res.status(400).json({success: false, message: "please confirm account"});
+	} else {
+		next();
+	}
+}
+
 var urlStrip = function(req, res, next) {
 	var path = utilities.stripPath(req.url);
 	req.strip_path = path;
@@ -67,14 +75,18 @@ var urlStrip = function(req, res, next) {
 
 //pre-auth routes
 app.get('/', function(req,res) {
-	res.render('home', { title: 'Hey', message: 'Hello there!'});
-})
+	res.render('home', {"email":"mr.mixx@naazdy.net","token":"LONG_ASS_TOKEN","password":"your_password"})
+});
 
-app.use('/register', register)
+app.use('/register', register);
 app.use('/authorize', auth);
 
 //check authentication before proceeding to api
 app.use(checkAuth);
+
+//confirmation
+app.use('/confirm', confirm);
+app.use(confirmed);
 
 //strip path
 app.use(urlStrip);
