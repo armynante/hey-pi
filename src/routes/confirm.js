@@ -14,8 +14,12 @@ router.get('/',(req,res) => {
 	var user = req.user;
 	user['confirmed'] = true;
 	var query = {'email' : user.email };
+
 	Mongo._update('users',query, user).then((resp) => {
-		res.send("confirmed");
+		res.render("home",{ "email": user.email,
+	 											"token": req.query.token,
+												"password":"your_password"
+											});
 	})
 	.catch((err) => {
 		console.log(err);

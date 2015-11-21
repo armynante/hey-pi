@@ -40,6 +40,42 @@ var _bodyParser2 = _interopRequireDefault(_bodyParser);
 
 var router = _express2['default'].Router();
 
+router.post('/login', function (req, res) {
+	var email = req.body.email;
+	var pass = req.body.pass;
+
+	var user = { "email": email, "pass": pass };
+	//find user and test pass
+	_serverJs2['default']._getData(['users', 'email_is_' + email]).then(function (resp) {
+		//if we get a match
+		if (resp.message.length) {
+			var user = resp.message[0];
+			//test the password
+			_bcryptjs2['default'].compare(pass, user.password, function (err, valid) {
+				if (valid) {
+					var token = _jsonwebtoken2['default'].sign(user, _configJs2['default'].secret, {
+						expiresIn: "30d" //24r
+					});
+
+					user['token'] = token;
+					delete user['pass'];
+					user['authorized'] = true;
+					res.render('home', { "email": user.email,
+						"password": "your_password",
+						"token": token
+					});
+				} else {
+					res.status(401).json({ "success": false, "message": "password incorrect" });
+				}
+			});
+		} else {
+			res.status(404).json({ "success": false, "message": "no user found with that email" });
+		}
+	})['catch'](function (err) {
+		res.status(500).json({ "success": false, "message": err });
+	});
+});
+
 router.post('/', function (req, res) {
 	var email = req.body.email || req.query.email;
 	var pass = req.body.pass || req.query.pass;

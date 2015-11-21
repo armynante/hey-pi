@@ -37,8 +37,12 @@ router.get('/', function (req, res) {
 	var user = req.user;
 	user['confirmed'] = true;
 	var query = { 'email': user.email };
+
 	_serverJs2['default']._update('users', query, user).then(function (resp) {
-		res.send("confirmed");
+		res.render("home", { "email": user.email,
+			"token": req.query.token,
+			"password": "your_password"
+		});
 	})['catch'](function (err) {
 		console.log(err);
 		res.send("err");
