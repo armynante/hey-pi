@@ -20,7 +20,7 @@ router.post('/',(req,res) => {
   })
   .then((resp) => {
     var html = '';
-    var emailSubject = '';
+    var emailSubject = 'Welocome to Hey-P.I';
     if (req.body.htmlEmailMessage !== null && req.body.htmlEmailMessage !== '') {
       html = req.body.htmlEmailMessage;
     }
@@ -32,6 +32,7 @@ router.post('/',(req,res) => {
     res.status(resp.code).json(resp.message);
   })
 	.catch((err) => {
+    console.log(err);
 		res.status(err.code).json(err);
 	})
 });
@@ -75,6 +76,7 @@ router.post('/authorize',(req,res) => {
 
 router.get('/', (req, res) => {
  	Mongo._get('users',{'usersId' : req.user._id}).then((resp) => {
+    console.log(resp);
       req.user.reads++;
       Mongo._update('users',{'_id':req.user._id}, req.user);
 			res.status(200).json(resp);
@@ -112,21 +114,27 @@ router.put('/:userId', (req, res) => {
     if (req.body._id !== undefined) {
       req.body._id = new ObjectID(req.body._id);
     }
+    if (req.body.usersId !== undefined) {
+      req.body.usersId = new ObjectID(req.body.usersId);
+    }
 
   } catch (e) {
     res.status(500).json({message:"Error parsing id. Please check too see if the id is valid."});
   }
-  console.log(req.user._id);
+
  	Mongo._update('users',{"_id":id},req.body).then((resp) => {
       req.user.writes++;
       Mongo._update('users',{'_id':req.user._id}, req.user);
-      console.log(resp);
 			res.status(200).json({"success":true,"message":"guest record updated"});
 		})
 		.catch((err) => {
       res.status(err.message.code).json({message: err.message.message});
 		});
 	});
+
+  router.delete("/", (req,resp) => {
+    res.status(405).json({success:false, message: "batch DELETE operations not allowed on guests collection"});
+  })
 
 
 

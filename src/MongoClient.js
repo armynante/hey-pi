@@ -54,7 +54,6 @@
   _get(collectionName,query) {
     var promise = new Promise(
       (resolve, reject) => {
-        console.log(query);
         this.db.collection(collectionName).find(query, (err,resp) => {
           //check for duplicate entry
           if (err !== null ) {
@@ -79,9 +78,6 @@
   _update(name, query, obj) {
     var promise = new Promise(
       (resolve, reject) => {
-        console.log(name);
-        console.log(query);
-        console.log(obj);
         this.db.collection(name).updateOne(query, {$set: obj}, (err,resp) => {
           //check for duplicate entry
           if (err !== null ) {

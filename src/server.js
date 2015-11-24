@@ -45,7 +45,7 @@ var checkAuth = function(req, res, next) {
 						req.user = docs[0]
 						next();
 					} else {
-						res.status(500).json("can't find user");
+						res.status(500).json({success:false, message:"Token authentication failed, can't a find user with that token. Please re-authorize and try again."});
 					}
 				})
 				.catch((err) => {
