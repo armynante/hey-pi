@@ -2,19 +2,15 @@ body {
   margin: 0;
 }
 .header {
-  background-color: #4A90E2;
-  height: 30vw;
-  display: flex;
-  flex-direction: row;
-  z-index: 0;
+  background-color: #B5D6EC;
 }
-.navigtion {
-  z-index: 10;
-  align-items: stretch;
-  order: 2;
+.navigation {
+  background-color: #4C5D65;
+  padding: 2vh;
 }
 .navigation ul {
   list-style-type: none;
+  margin: 0;
 }
 .navigation li {
   font-family: Molot;
@@ -23,130 +19,81 @@ body {
 }
 .navigation li a {
   text-decoration: none;
-  color: #4A4A4A;
+  color: white;
 }
 .navigation li a:hover {
   color: white;
 }
-.billboard {
-  align-items: stretch;
-  padding: 15px;
+
+.jumbo {
+  justify-content: space-around;
+  display: flex;
+  flex-flow: column;
+  flex-wrap: nowrap;
+}
+
+@font-face {  font-family: 'Open Sans';  font-style: normal;  font-weight: 400;  src: local('Open Sans'), local('OpenSans'), url('data:font/woff2;base64,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') format('woff2');}@font-face {  font-family: 'Open Sans';  font-style: normal;  font-weight: 700;  src: local('Open Sans Bold'), local('OpenSans-Bold'), url('data:font/woff2;base64,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') format('woff2');}.rc-ribbon-green-top-right {  font-family: 'Open Sans', sans-serif;  display: block;  overflow: hidden;  white-space: nowrap;  margin: 1px 0;  text-decoration: none;  padding: 0.5em 3em;  position: absolute;  box-shadow: 0 0 0.25em #888;  color: white;  background: #61ae24;  border: 1px solid #79d431;  -webkit-transform: rotate(45deg);      -ms-transform: rotate(45deg);          transform: rotate(45deg);  top: 4em;  right: -4em;}.rc-ribbon-green-top-right strong {  font-weight: bold;}.rc-ribbon-green-top-right > a {  font-size: 0.85em;  color: inherit;  text-decoration: none;}.rc-ribbon-green-top-right > a:visited,.rc-ribbon-green-top-right > a:active,.rc-ribbon-green-top-right > a:hover,.rc-ribbon-green-top-right > a:focus {  color: inherit;}.rc-ribbon-green-top-right > a > i.icon-svg svg {  height: 1.5em;  margin-bottom: -0.3em;  margin-right: 0.5em;}.rc-ribbon-green-top-right > a > span {  text-align: center;  text-decoration: none;}
+
+.jumbo h1 {
+  font-family: Open Sans;
+  font-weight: bold;
+  color: white;
+  width: 80vw;
+  margin: auto;
+  font-size: 2vw;
+  text-align: center;
+  padding-top: 2vw;
+}
+.jumbo .logo {
   font-family: Molot;
-  /*-webkit-perspective: 50vw;
-  -ms-perspective: 50vw;
-  -o-perspective: 50vw;
-  -moz-perspective: 50vw;
-   perspective: 50vw;*/
+  color: #4C5D65;
+  width: 80vw;
+  margin: auto;
+  font-size: 8vw;
+  text-align: center;
+  padding-top: 5vw;
 }
-.header .post {
-  height: 4vw;
-  width: 1vw;
-  background-color: #67512C;
-  position: absolute;
-  z-index: 10;
-  top:26vw;
+.jumbo p {
+
+  font-family:  Open Sans;
+  font-weight: bold;
+  color: #4C5D65;
+  width: 80vw;
+  margin: auto;
+  font-size: 1.5vw;
+  text-align: center;
+  padding-top: 3vw;
 }
-.post1 {
-  left: 10vw;
+
+.project-types {
+  display: flex;
+  flex-flow: row;
+  justify-content: center;
+  clear: both;
 }
-.post2 {
-  left: 50vw;
+.project-types button {
+  padding: 2vw;
+  font-family: Molot;
+  background-color: #8DB5D1;
+  color: white;
+  border: none;
+  font-size: 2em;
+  margin: 2vw;
+  border-radius: 2px;
 }
-.billboard-board {
-  position: relative;
-  height: 20vw;
-  width: 50vw;
-  background-color: white;
-  border: 1vh solid  #67512C;
-  /*-webkit-transform: rotatey(26deg);
-  -ms-transform: rotatey(26deg);
-  -o-transform: rotatey(26deg);
-  -moz-transform: rotatey(26deg);
-   transform: rotatey(26deg);*/
-   margin-left: 4vw;
-   margin-top: 4vw;
-   z-index: 100;
-   /*-webkit-box-shadow: inset 19px 29px 102px -19px rgba(0,0,0,0.75);
-   -moz-box-shadow: inset 19px 29px 102px -19px rgba(0,0,0,0.75);
-   box-shadow: inset 19px 29px 102px -19px rgba(0,0,0,0.75);*/
-}
+
 .login, .register {
   display: none;
 }
-.billboard-login {
-  z-index: 200;
-  position: absolute;
-  top: 9vw;
-  height: 15vw;
-  width: 40vw;
-  margin-left: 10vw;
-  font-size: 2vw;
-  color: #4A4A4A;
-}
-.billboard-login input {
-  border: none;
-  border: 2px solid #B8E986;
-  width: 100%;
-  font-family: Roboto;
-  color: #4A4A4A;
-  height: 1.5vw;
-  font-size: 1vw;
-  width: 100%;
-}
-.billboard-login button {
-  font-family: DancingScript;
-  border: none;
-  font-size: 2vw;
-  background-color:  white;
-  color: #4A90E2;
-}
-.billboard-login button:hover {
-  background-color:  white;
-  color: #7EA1CA;
-}
-.billboard-login td {
-  text-align: right;
-}
-.billboard-login tr {
-  height: 4vw;
+
+
+@media only screen and (min-device-width: 414px) and (max-device-width: 736px) and (orientation : portrait) {
+    .billboard-board {
+      display: none;
+    }
 }
 
-.billboard-login .input-area {
-  padding-left: 2vw;
-  width: 28vw;
-}
 
-.billboard-login table {
-  width: 100%;
-}
-
-.billboard-header {
-  z-index: 200;
-  position: absolute;
-  top: 9vw;
-  font-size: 13.5vw;
-  margin-left: 6vw;
-  /*-webkit-transform: rotatey(26deg);
-  -ms-transform: rotatey(26deg);
-  -o-transform: rotatey(26deg);
-  -moz-transform: rotatey(26deg);
-   transform: rotatey(26deg);*/
-   color: #F5A623;
-   -webkit-text-stroke: 2px #4A90E2;
-}
-.billboard-welcome {
-  z-index: 300;
-  font-family: DancingScript;
-  position: absolute;
-  top: 8vw;
-  margin-left: 6vw;
-  /*-webkit-transform: rotatey(26deg);
-  -ms-transform: rotatey(26deg);
-  -o-transform: rotatey(26deg);
-  -moz-transform: rotatey(26deg);
-   transform: rotatey(26deg);*/
-   font-size: 4vw;
-}
 .tres {
   background-color: #4A4A4A;
   height: auto;
@@ -164,6 +111,7 @@ body {
   display: flex;
   flex-direction: row;
   justify-content: space-around;
+  padding-top: 3vw;
 }
 .tres .item {
   display: flex;
@@ -254,7 +202,7 @@ body {
 }
 @font-face {
   font-family: Molot;
-  src: url("/Molot.otf") format("opentype");
+  src: url("/GrandHotel-Regular.otf") format("opentype");
 }
 @font-face {
   font-family: Roboto;

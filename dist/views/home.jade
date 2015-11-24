@@ -42,13 +42,22 @@ html(lang="en")
       include home.js
     
   body
+    div.navigation
+      ul
+        each item in list
+          li  
+            a(href="#",id=item.name)=item.name
     div.header
-      div.billboard
-        div.billboard-board 
-        div.welcome-area
-          div.billboard-header HEY-P.I
-          div.billboard-welcome welcome to...
-        div.billboard-login 
+      | <div class="rc-ribbon-green-top-right"><a href="http://www.recurse.com" title="Made with love at the Recurse Center"><i class="icon-svg"><svg viewBox="0 0 12 15"><rect x="0" y="0" width="12" height="10" fill="black"></rect><rect x="1" y="1" width="10" height="8" fill="white"></rect><rect x="2" y="2" width="8" height="6" fill="black"></rect><rect x="2" y="3" width="1" height="1" fill="#61ae24"></rect><rect x="4" y="3" width="1" height="1" fill="#61ae24"></rect><rect x="6" y="3" width="1" height="1" fill="#61ae24"></rect><rect x="3" y="5" width="2" height="1" fill="#61ae24"></rect><rect x="6" y="5" width="2" height="1" fill="#61ae24"></rect><rect x="4" y="9" width="4" height="3" fill="black"></rect><rect x="1" y="11" width="10" height="4" fill="black"></rect><rect x="0" y="12" width="12" height="3" fill="black"></rect><rect x="2" y="13" width="1" height="1" fill="white"></rect><rect x="3" y="12" width="1" height="1" fill="white"></rect><rect x="4" y="13" width="1" height="1" fill="white"></rect><rect x="5" y="12" width="1" height="1" fill="white"></rect><rect x="6" y="13" width="1" height="1" fill="white"></rect><rect x="7" y="12" width="1" height="1" fill="white"></rect><rect x="8" y="13" width="1" height="1" fill="white"></rect><rect x="9" y="12" width="1" height="1" fill="white"></rect></svg></i><span><span>Made at the </span><strong>Recurse Center</strong></span></a></div>
+
+      div.jumbo 
+        h1.logo Hey.p.i
+        h1 (hey-p-eye) is a datastore and API for your prototype or front-end project
+        p deploy it as a back-end or use it as a hosted service
+        a<img(src="https://img.shields.io/github/stars/badges/shields.svg?style=social&label=Star")
+      div.project-types
+        button.hosted hosted
+        button.npm-module npm module
           div.register-box.register
             form(name="register")
               table
@@ -90,45 +99,14 @@ html(lang="en")
                   td
                     button.cancel cancel 
                     button(type="submit",id="login-click") submit
-    
-      div.post.post1
-      div.post.post2
         
-      div.navigation
-        ul
-          each item in list
-            li  
-              a(href="#",id=item.name)=item.name
       
-    div.tres 
-      div.welcome Hey-pi is a dead-simple API for your prototype
-      
-      div.boxes
-      
-        div.item
-          div.item-box
-            div.box andrew@hey-pi.com
-            div.box(style={"line-height": "2"}) **************
-          div.sub-heading Register
-          div.sub-text Signup with your email
 
-          
-        div.item
-          div.item-box
-            img(src="/coin.png")
-          div.sub-heading Get a token
-          div.sub-text Pass this along with each request
-          
-        div.item
-          div.item-box(style={"text-align": "center"})
-            !="01111001 01101111 01110101 <br/> 00100000 01100001 01110010 <br/>01100101 00100000 01100001 <br/>00100000 01101110 01100101 <br/> 01110010 01100100"
-          div.sub-heading Save Stuff!
-          div.sub-text POST,GET,PUT,DELETE to your heart's desire
         
     div.api
       
       div.route
-        div.route-name Authorize
+        div.route-name authorize
         div.description Get a new token to access the API. The tokens exprie and need to be re-created from time to time.
         div.code-block curl -H "Content-Type: application/json" -X POST -d '{"email":#{email},"pass":#{password} https://hey-pi.com/authorize
         div.description Response includes a new token that you can use to access the API.
@@ -137,7 +115,7 @@ html(lang="en")
             !=syntaxHighlight(resp2)
 
       div.route
-        div.route-name Post
+        div.route-name POST
         div.description You can POST data to a new collection by simply directing an ajax call to a new route. For example if I wanted to make a database of rap groups I could just send data to hey-pi.com/api/crews.
         div.code-block curl -H "Content-Type: application/json" -H "x-access-token: #{token}" -X POST -d '{"name":"2 live crew","location":"Miami, Florida, U.S.","genre":"Miami bass","nasty":true}' https://hey-pi.com/api/crews
         div.description If the POST was successful then you will recive the newly created document with an id attached.
