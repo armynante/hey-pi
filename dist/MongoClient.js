@@ -109,6 +109,9 @@ var MongoClient = (function (_Mongo) {
       var _this5 = this;
 
       var promise = new Promise(function (resolve, reject) {
+        console.log(name);
+        console.log(query);
+        console.log(obj);
         _this5.db.collection(name).updateOne(query, { $set: obj }, function (err, resp) {
           //check for duplicate entry
           if (err !== null) {

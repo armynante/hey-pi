@@ -41,6 +41,8 @@ var User = (function () {
     this.confirmed = false;
     this.numCols = 0;
     this.numDocs = 0;
+    this.isGuest = false;
+    this.usersId = null;
     this.writes = 0;
     this.reads = 0;
     this.createdOn = now;
@@ -60,8 +62,6 @@ var User = (function () {
           // remover clear text pass
           delete savedUser['pass'];
           savedUser['token'] = token;
-          console.log(savedUser);
-          _utilitiesJs2['default'].sendEmail(savedUser);
           resolve({ code: 201, message: savedUser });
         })['catch'](function (err) {
           reject({ code: 500, message: err });

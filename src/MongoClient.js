@@ -79,6 +79,9 @@
   _update(name, query, obj) {
     var promise = new Promise(
       (resolve, reject) => {
+        console.log(name);
+        console.log(query);
+        console.log(obj);
         this.db.collection(name).updateOne(query, {$set: obj}, (err,resp) => {
           //check for duplicate entry
           if (err !== null ) {
@@ -149,7 +152,7 @@
  					var responseData = {
  						"code": 200,
  						"message": "Deleteted " + numDocsDeleted + " documents.",
- 						"docDelta": numDocsDeleted 
+ 						"docDelta": numDocsDeleted
  					};
  					resolve(responseData);
  				});

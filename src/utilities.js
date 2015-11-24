@@ -38,7 +38,6 @@ var utilities = {
 		var query = query.replace(/\%20/g,' ');
 
 		var queryWords = query.toLowerCase().split('_');
-		console.log(queryWords);
 		var fieldName = queryWords[0];
 		var lastWord = queryWords[queryWords.length - 1]
 
@@ -87,12 +86,12 @@ var utilities = {
 		return mongoQuery;
 	},
 
-	sendEmail: function(user) {
+	sendEmail: function(email,subject,html) {
 		var welcomeEmail = {
-		                      html:    "<p>please click on the link to confirm account<p></br><a href='http://hey-pi.com/confirm?token="+ user.token+ "'>confirm account...</a>",
-		                      from:    "Andrew @ Hey-PI<andrew.armenante@gmail.com>",
-		                      to:      user.email,
-		                      subject: "Welcome to Hey-PI!",
+		                     'html':   html,
+		                     'from':    "Andrew @ Hey-PI<andrew.armenante@gmail.com>",
+		                     'to':      email,
+		                     'subject': subject,
 		                    }
 
 

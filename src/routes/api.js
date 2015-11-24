@@ -1,10 +1,14 @@
-import express from 'express'
+import express from 'express';
 import Mongo from '../server.js';
 import bodyParser from 'body-parser';
 import { ObjectID } from "mongodb";
-
+import guests from './guests.js';
 
 var router = express.Router();
+
+//assigns the users users or "guests" an api key and password.
+//also deals with lost passwords
+router.use('/guests',guests);
 
 router.get('/*', (req, res) => {
 		if(req.strip_path[0] !== undefined) {
@@ -19,7 +23,8 @@ router.get('/*', (req, res) => {
 		} else {
 			res.status(404).json("Hi!");
 		}
-	})
+	});
+
 
 router.post('/*', (req,res) => {
 		Mongo._saveData(req.strip_path, req.body, req.user._id).then((resp) => {

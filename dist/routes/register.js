@@ -39,7 +39,6 @@ router.get('/homepage/:email/:pass', function (req, res) {
   user.setPassword(req.params.pass).then(function () {
     return user.save();
   }).then(function (resp) {
-    console.log(resp);
     res.render('home', { "email": req.params.email,
       "token": resp.message.User.token,
       "password": "your_password",
@@ -55,8 +54,12 @@ router.post('/', function (req, res) {
   user.setPassword(req.body.pass).then(function () {
     return user.save();
   }).then(function (resp) {
+    console.log(resp);
+    var html = "<p>please click on the link to confirm account<p></br><a href='http://hey-pi.com/confirm?token=" + resp.message.token + "'>confirm account...</a>";
+    _utilitiesJs2['default'].sendEmail(resp.message.email, 'Welcome to Hey-p.i! Please click to confirm', html);
     res.status(resp.code).json(resp.message);
   })['catch'](function (err) {
+    console.log(err);
     res.status(err.code).json(err.message);
   });
 });

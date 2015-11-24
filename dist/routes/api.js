@@ -20,7 +20,15 @@ var _bodyParser2 = _interopRequireDefault(_bodyParser);
 
 var _mongodb = require("mongodb");
 
+var _guestsJs = require('./guests.js');
+
+var _guestsJs2 = _interopRequireDefault(_guestsJs);
+
 var router = _express2['default'].Router();
+
+//assigns the users users or "guests" an api key and password.
+//also deals with lost passwords
+router.use('/guests', _guestsJs2['default']);
 
 router.get('/*', function (req, res) {
 	if (req.strip_path[0] !== undefined) {

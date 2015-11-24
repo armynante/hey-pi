@@ -13,6 +13,8 @@ export class User {
     this.confirmed = false;
     this.numCols = 0;
     this.numDocs = 0;
+    this.isGuest = false;
+    this.usersId = null;
     this.writes = 0;
     this.reads = 0;
     this.createdOn = now;
@@ -31,8 +33,6 @@ export class User {
           // remover clear text pass
           delete savedUser['pass'];
           savedUser['token'] = token;
-          console.log(savedUser);
-          utilities.sendEmail(savedUser);
           resolve({code: 201, message: savedUser});
         })
         .catch((err) => {
