@@ -132,8 +132,34 @@ router.put('/:userId', (req, res) => {
 		});
 	});
 
+  //DELETE
   router.delete("/", (req,resp) => {
     res.status(405).json({success:false, message: "batch DELETE operations not allowed on guests collection"});
+  })
+
+
+  //DELETE ONE
+  router.delete("/:userId", (req,res) => {
+    try {
+      var id = new ObjectID(req.params.userId);
+    } catch (e) {
+      res.status(500).json({message:"Error parsing id. Please check too see if the id is valid."});
+    }
+
+    //check to see if user owns the record
+    Mongo._get('users',{"usersId" : req.user._id, "_id": id } ).then((resp) => {
+      if (resp[0] !== undefined) {
+        Mongo._delete('users',{'_id': id}).then((resp) => {
+          res.status(resp.code).json(resp.message);
+        });
+      } else {
+			  res.status(400).json({success:false, message:"No record fount to delete with that id"});
+      }
+		})
+		.catch((err) => {
+      console.log(err);
+			res.json(err);
+		});
   })
 
 

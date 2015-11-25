@@ -57,7 +57,7 @@
         this.db.collection(collectionName).find(query, (err,resp) => {
           //check for duplicate entry
           if (err !== null ) {
-            reject({code: 400, message: "error querying " + query })
+            reject({code: 500, message: "error querying " + query })
           } else {
             resp.toArray( (err, docs)=> {
               if (err !== null ) {
@@ -66,6 +66,22 @@
                 resolve(docs);
               }
             })
+          }
+        });
+      }
+    );
+    return promise;
+  }
+
+  _delete(collectionName,query) {
+    var promise = new Promise(
+      (resolve, reject) => {
+        this.db.collection(collectionName).remove(query,{justOne:true}, (err,resp) => {
+
+          if (err !== null ) {
+            reject({code: 500, message: "error deleting " + query })
+          } else {
+            resolve({code: 200, message: resp.result.n + " document deleted" });
           }
         });
       }

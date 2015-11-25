@@ -86,7 +86,7 @@ var MongoClient = (function (_Mongo) {
         _this4.db.collection(collectionName).find(query, function (err, resp) {
           //check for duplicate entry
           if (err !== null) {
-            reject({ code: 400, message: "error querying " + query });
+            reject({ code: 500, message: "error querying " + query });
           } else {
             resp.toArray(function (err, docs) {
               if (err !== null) {
@@ -100,15 +100,32 @@ var MongoClient = (function (_Mongo) {
       });
       return promise;
     }
+  }, {
+    key: '_delete',
+    value: function _delete(collectionName, query) {
+      var _this5 = this;
+
+      var promise = new Promise(function (resolve, reject) {
+        _this5.db.collection(collectionName).remove(query, { justOne: true }, function (err, resp) {
+
+          if (err !== null) {
+            reject({ code: 500, message: "error deleting " + query });
+          } else {
+            resolve({ code: 200, message: resp.result.n + " document deleted" });
+          }
+        });
+      });
+      return promise;
+    }
 
     //simple update for admin functions
   }, {
     key: '_update',
     value: function _update(name, query, obj) {
-      var _this5 = this;
+      var _this6 = this;
 
       var promise = new Promise(function (resolve, reject) {
-        _this5.db.collection(name).updateOne(query, { $set: obj }, function (err, resp) {
+        _this6.db.collection(name).updateOne(query, { $set: obj }, function (err, resp) {
           //check for duplicate entry
           if (err !== null) {
             reject({ code: 400, message: err });
@@ -122,11 +139,11 @@ var MongoClient = (function (_Mongo) {
   }, {
     key: '_getData',
     value: function _getData(path, id) {
-      var _this6 = this;
+      var _this7 = this;
 
       var promise = new Promise(function (resolve, reject) {
 
-        _this6._propagateQuery(path).then(function (resolveObj) {
+        _this7._propagateQuery(path).then(function (resolveObj) {
           var collection = resolveObj.collection;
           var mongoQuery = resolveObj.mongoQuery;
 
@@ -161,11 +178,11 @@ var MongoClient = (function (_Mongo) {
   }, {
     key: '_delData',
     value: function _delData(path, id) {
-      var _this7 = this;
+      var _this8 = this;
 
       var promise = new Promise(function (resolve, reject) {
 
-        _this7._propagateQuery(path, id).then(function (resolveObj) {
+        _this8._propagateQuery(path, id).then(function (resolveObj) {
           var collection = resolveObj.collection;
           var mongoQuery = resolveObj.mongoQuery;
           mongoQuery['heypi_id'] = id;
@@ -198,7 +215,7 @@ var MongoClient = (function (_Mongo) {
   }, {
     key: '_propagateQuery',
     value: function _propagateQuery(path, id) {
-      var _this8 = this;
+      var _this9 = this;
 
       var pathArray = [];
       if (path.length % 2 === 1) path.push("");
@@ -225,7 +242,7 @@ var MongoClient = (function (_Mongo) {
             mongoQuery = _underscore2['default'].extend(mongoQuery, result.fkQuery);
 
             var promise = new Promise(function (resolve, reject) {
-              _this8._loadCollection(collectionName).then(function (collection) {
+              _this9._loadCollection(collectionName).then(function (collection) {
                 if (index !== pathArray.length - 1) {
                   var cursor = collection.find(mongoQuery);
 
@@ -281,13 +298,13 @@ var MongoClient = (function (_Mongo) {
   }, {
     key: '_updateData',
     value: function _updateData(path, data, id) {
-      var _this9 = this;
+      var _this10 = this;
 
       var collectionName = path[0];
 
       var promise = new Promise(function (resolve, reject) {
 
-        _this9._loadCollection(collectionName).then(function (collection) {
+        _this10._loadCollection(collectionName).then(function (collection) {
           return updateDataHelper(collection, id);
         }).then(function (response) {
 

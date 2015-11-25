@@ -25,7 +25,7 @@ router.post('/login',(req,res) => {
 			bcrypt.compare(pass, user.password, (err,valid) => {
 				if(valid) {
 					var token = jwt.sign(user, config.secret, {
-						expiresIn: "30d" //24r
+						expiresIn: "30 days" //24r
 					});
 
 					user['token'] = token;
