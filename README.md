@@ -1,0 +1,1 @@
+Hey-PI helps you to test and deploy your web projects without worrying about setting up a database. Simply store relevant data by making POST requests to the Hey-PI server, and get your data back by making GET requests with URL parameters for queries. 
